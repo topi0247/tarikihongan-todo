@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:9.6
+    environment:
+      POSTGRES_USER: tarikihongan
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: tarikihongan-db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - 5432:5432
+  back:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    command: go run server.go
+    ports:
+      - 8080:8080
+    volumes:
+      - ./back:/app
+    restart: always
+    tty: true
+    depends_on:
+      - db
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    command: npm run start
+    ports:
+      - 3000:3000
+    volumes:
+      - ./front:/app
+    restart: always
+    tty: true
+    depends_on:
+      - back
+volumes:
+  db_data:
