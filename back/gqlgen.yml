@@ -1,0 +1,12 @@
+schema:
+  - ./db/schema/*.graphql
+exec:
+  filename: ./db/exec.go
+model:
+  filename: ./models/model_gen.go
+  package: models
+resolver:
+  layout: follow-schema
+  dir: ./resolvers
+autobind:
+  - tarikihongan-todo/models
