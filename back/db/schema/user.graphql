@@ -1,17 +1,19 @@
-type Query {
-  users: [User!]!
-  user(id: ID!): User
+extend type Query {
+  Users: [User!]!
+  User(id: ID!): User
 }
 
-type Mutation {
-  CreateUser(name: String! email: String! password: String!): User!
-  UpdateUser(id: ID! name: String!): User!
-  DeleteUser(id: ID!): User!
+extend type Mutation {
+  UpdateUser(name: String!): Response!
+  DeleteUser: Response!
 }
 
 type User {
   id: ID!
   name: String!
-  email: String!
-  password: String!
+}
+
+extend type Response {
+  success: Boolean!
+  message: String
 }

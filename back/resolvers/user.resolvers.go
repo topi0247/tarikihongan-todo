@@ -10,63 +10,61 @@ import (
 	"strconv"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
+	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-// CreateUser is the resolver for the CreateUser field.
-func (r *mutationResolver) CreateUser(ctx context.Context, name string, email string, password string) (*models.User, error) {
-	user := &models.User{
-		Name:     name,
-		Email:    email,
-		Password: bcryptPassword(password),
-	}
-	if err := user.Insert(ctx, db.DB, boil.Infer()); err != nil {
-		log.Fatalln(err)
-		return nil, err
-	}
-	return user, nil
-}
-
 // UpdateUser is the resolver for the UpdateUser field.
-func (r *mutationResolver) UpdateUser(ctx context.Context, id string, name string) (*models.User, error) {
-	convID, err := strconv.Atoi(id)
-	if err != nil {
-		log.Fatalln(err)
-		return nil, err
+func (r *mutationResolver) UpdateUser(ctx context.Context, name string) (*models.Response, error) {
+	userId, success := usecase.GetCache("user_id")
+	if !success {
+		errMsg := "User not found."
+		return &models.Response{Success: false, Message: &errMsg}, nil
 	}
-	qm := models.UserWhere.ID.EQ(convID)
+
+	qm := models.UserWhere.ID.EQ(userId.(int))
 	user, err := models.Users(qm).One(ctx, db.DB)
 	if err != nil {
 		log.Fatalln(err)
-		return nil, err
+		errMsg := err.Error()
+		return &models.Response{Success: false, Message: &errMsg}, err
 	}
+
 	user.Name = name
 	if _, err := user.Update(ctx, db.DB, boil.Infer()); err != nil {
 		log.Fatalln(err)
-		return nil, err
+		errMsg := err.Error()
+		return &models.Response{Success: false, Message: &errMsg}, err
 	}
-	return user, nil
+
+	message := "User updated successfully."
+	return &models.Response{Success: true, Message: &message}, nil
 }
 
 // DeleteUser is the resolver for the DeleteUser field.
-func (r *mutationResolver) DeleteUser(ctx context.Context, id string) (*models.User, error) {
-	convID, err := strconv.Atoi(id)
-	if err != nil {
-		log.Fatalln(err)
-		return nil, err
+func (r *mutationResolver) DeleteUser(ctx context.Context) (*models.Response, error) {
+	userId, success := usecase.GetCache("user_id")
+	if !success {
+		errMsg := "User not found."
+		return &models.Response{Success: false, Message: &errMsg}, nil
 	}
-	qm := models.UserWhere.ID.EQ(convID)
+
+	qm := models.UserWhere.ID.EQ(userId.(int))
 	user, err := models.Users(qm).One(ctx, db.DB)
 	if err != nil {
 		log.Fatalln(err)
-		return nil, err
+		errMsg := err.Error()
+		return &models.Response{Success: false, Message: &errMsg}, err
 	}
+
 	if _, err := user.Delete(ctx, db.DB); err != nil {
 		log.Fatalln(err)
-		return nil, err
+		errMsg := err.Error()
+		return &models.Response{Success: false, Message: &errMsg}, err
 	}
-	return user, nil
+	message := "User delete successfully."
+	return &models.Response{Success: true, Message: &message}, nil
 }
 
 // Users is the resolver for the users field.
@@ -93,12 +91,3 @@ func (r *queryResolver) User(ctx context.Context, id string) (*models.User, erro
 	}
 	return user, nil
 }
-
-// Mutation returns db.MutationResolver implementation.
-func (r *Resolver) Mutation() db.MutationResolver { return &mutationResolver{r} }
-
-// Query returns db.QueryResolver implementation.
-func (r *Resolver) Query() db.QueryResolver { return &queryResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

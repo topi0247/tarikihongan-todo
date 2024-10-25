@@ -1,0 +1,18 @@
+extend type Query {
+  Todos: [Todo!]!
+  TodoByID(id: ID!): Todo
+  TodoByCreatedUser(userId: ID): [Todo!]!
+}
+
+extend type Mutation {
+  CreateTodo(userId: ID! title: String!): Response!
+  UpdateTodo(id: ID! title: String!): Response!
+  DeleteTodo(id: ID!): Response!
+}
+
+type Todo {
+  id: ID!
+  title: String!
+  created_user: User!
+  created_at: String!
+}

@@ -25,8 +25,8 @@ import (
 type User struct {
 	ID        int       `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
-	Email     string    `boil:"email" json:"email" toml:"email" yaml:"email"`
-	Password  string    `boil:"password" json:"password" toml:"password" yaml:"password"`
+	UID       string    `boil:"uid" json:"uid" toml:"uid" yaml:"uid"`
+	Provider  string    `boil:"provider" json:"provider" toml:"provider" yaml:"provider"`
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 
@@ -37,15 +37,15 @@ type User struct {
 var UserColumns = struct {
 	ID        string
 	Name      string
-	Email     string
-	Password  string
+	UID       string
+	Provider  string
 	CreatedAt string
 	UpdatedAt string
 }{
 	ID:        "id",
 	Name:      "name",
-	Email:     "email",
-	Password:  "password",
+	UID:       "uid",
+	Provider:  "provider",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
 }
@@ -53,87 +53,47 @@ var UserColumns = struct {
 var UserTableColumns = struct {
 	ID        string
 	Name      string
-	Email     string
-	Password  string
+	UID       string
+	Provider  string
 	CreatedAt string
 	UpdatedAt string
 }{
 	ID:        "users.id",
 	Name:      "users.name",
-	Email:     "users.email",
-	Password:  "users.password",
+	UID:       "users.uid",
+	Provider:  "users.provider",
 	CreatedAt: "users.created_at",
 	UpdatedAt: "users.updated_at",
 }
 
 // Generated where
 
-type whereHelperint struct{ field string }
-
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
-type whereHelpertime_Time struct{ field string }
-
-func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.EQ, x)
-}
-func (w whereHelpertime_Time) NEQ(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.NEQ, x)
-}
-func (w whereHelpertime_Time) LT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpertime_Time) LTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpertime_Time) GT(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var UserWhere = struct {
 	ID        whereHelperint
 	Name      whereHelperstring
-	Email     whereHelperstring
-	Password  whereHelperstring
+	UID       whereHelperstring
+	Provider  whereHelperstring
 	CreatedAt whereHelpertime_Time
 	UpdatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperint{field: "\"users\".\"id\""},
 	Name:      whereHelperstring{field: "\"users\".\"name\""},
-	Email:     whereHelperstring{field: "\"users\".\"email\""},
-	Password:  whereHelperstring{field: "\"users\".\"password\""},
+	UID:       whereHelperstring{field: "\"users\".\"uid\""},
+	Provider:  whereHelperstring{field: "\"users\".\"provider\""},
 	CreatedAt: whereHelpertime_Time{field: "\"users\".\"created_at\""},
 	UpdatedAt: whereHelpertime_Time{field: "\"users\".\"updated_at\""},
 }
 
 // UserRels is where relationship names are stored.
 var UserRels = struct {
-}{}
+	CreatedUserTodos string
+}{
+	CreatedUserTodos: "CreatedUserTodos",
+}
 
 // userR is where relationships are stored.
 type userR struct {
+	CreatedUserTodos TodoSlice `boil:"CreatedUserTodos" json:"CreatedUserTodos" toml:"CreatedUserTodos" yaml:"CreatedUserTodos"`
 }
 
 // NewStruct creates a new relationship struct
@@ -141,12 +101,19 @@ func (*userR) NewStruct() *userR {
 	return &userR{}
 }
 
+func (r *userR) GetCreatedUserTodos() TodoSlice {
+	if r == nil {
+		return nil
+	}
+	return r.CreatedUserTodos
+}
+
 // userL is where Load methods for each relationship are stored.
 type userL struct{}
 
 var (
-	userAllColumns            = []string{"id", "name", "email", "password", "created_at", "updated_at"}
-	userColumnsWithoutDefault = []string{"name", "email", "password"}
+	userAllColumns            = []string{"id", "name", "uid", "provider", "created_at", "updated_at"}
+	userColumnsWithoutDefault = []string{"name", "uid", "provider"}
 	userColumnsWithDefault    = []string{"id", "created_at", "updated_at"}
 	userPrimaryKeyColumns     = []string{"id"}
 	userGeneratedColumns      = []string{}
@@ -455,6 +422,186 @@ func (q userQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bool,
 	}
 
 	return count > 0, nil
+}
+
+// CreatedUserTodos retrieves all the todo's Todos with an executor via created_user_id column.
+func (o *User) CreatedUserTodos(mods ...qm.QueryMod) todoQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"todos\".\"created_user_id\"=?", o.ID),
+	)
+
+	return Todos(queryMods...)
+}
+
+// LoadCreatedUserTodos allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadCreatedUserTodos(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`todos`),
+		qm.WhereIn(`todos.created_user_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load todos")
+	}
+
+	var resultSlice []*Todo
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice todos")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on todos")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for todos")
+	}
+
+	if len(todoAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.CreatedUserTodos = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &todoR{}
+			}
+			foreign.R.CreatedUser = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.CreatedUserID {
+				local.R.CreatedUserTodos = append(local.R.CreatedUserTodos, foreign)
+				if foreign.R == nil {
+					foreign.R = &todoR{}
+				}
+				foreign.R.CreatedUser = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// AddCreatedUserTodos adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.CreatedUserTodos.
+// Sets related.R.CreatedUser appropriately.
+func (o *User) AddCreatedUserTodos(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Todo) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.CreatedUserID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"todos\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"created_user_id"}),
+				strmangle.WhereClause("\"", "\"", 2, todoPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.CreatedUserID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &userR{
+			CreatedUserTodos: related,
+		}
+	} else {
+		o.R.CreatedUserTodos = append(o.R.CreatedUserTodos, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &todoR{
+				CreatedUser: o,
+			}
+		} else {
+			rel.R.CreatedUser = o
+		}
+	}
+	return nil
 }
 
 // Users retrieves all the records using an executor.

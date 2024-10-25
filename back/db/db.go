@@ -5,18 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 var DB *sql.DB
 
 func Init() (err error) {
-	env := os.Getenv("ENV")
-	if env == "development" {
-		godotenv.Load()
-	}
-
 	port := 5432
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("DB_USER")
