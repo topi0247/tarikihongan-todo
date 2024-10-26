@@ -6,10 +6,10 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"strconv"
 	"tarikihongan-todo/db"
+	"tarikihongan-todo/internal/auth"
 	"tarikihongan-todo/models"
 	"tarikihongan-todo/usecase"
 
@@ -18,19 +18,7 @@ import (
 
 // UpdateUser is the resolver for the UpdateUser field.
 func (r *mutationResolver) UpdateUser(ctx context.Context, name string) (*models.Response, error) {
-	userId, success := usecase.GetCache("user_id")
-	if !success {
-		errMsg := "User not found."
-		return &models.Response{Success: false, Message: &errMsg}, nil
-	}
-
-	qm := models.UserWhere.ID.EQ(userId.(int))
-	user, err := models.Users(qm).One(ctx, db.DB)
-	if err != nil {
-		log.Fatalln(err)
-		errMsg := err.Error()
-		return &models.Response{Success: false, Message: &errMsg}, err
-	}
+	user := auth.CurrentUser
 
 	user.Name = name
 	if _, err := user.Update(ctx, db.DB, boil.Infer()); err != nil {
@@ -111,7 +99,31 @@ func (r *queryResolver) TodosByUser(ctx context.Context, userID *string) ([]*mod
 
 // DoneTodos is the resolver for the DoneTodos field.
 func (r *queryResolver) DoneTodos(ctx context.Context, userID *string) ([]*models.Todo, error) {
-	panic(fmt.Errorf("not implemented: DoneTodos - DoneTodos"))
+	intId, err := strconv.Atoi(*userID)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+
+	qm := models.DoneTodoWhere.UserID.EQ(intId)
+	doneTodos, err := models.DoneTodos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+
+	ids := make([]int, len(doneTodos))
+	for _, doneTodo := range doneTodos {
+		ids = append(ids, doneTodo.TodoID)
+	}
+
+	qm = models.TodoWhere.ID.IN(ids)
+	todos, err := models.Todos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	return todos, nil
 }
 
 // Todos is the resolver for the todos field.

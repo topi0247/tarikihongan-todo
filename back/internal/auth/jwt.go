@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -27,8 +28,12 @@ func ParseToken(tokenString string) (int, error) {
 		return SecretKey, nil
 	})
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := claims["user_id"].(int)
-		return userID, nil
+		if userIDFloat, ok := claims["user_id"].(float64); ok {
+			userID := int(userIDFloat)
+			return userID, nil
+		} else {
+			return 0, fmt.Errorf("型が無効です")
+		}
 	} else {
 		return 0, err
 	}

@@ -8,6 +8,7 @@ import (
 	"os"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
+	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
@@ -82,6 +83,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r.Header.Set("Authorization", tokenAuth)
 		log.Printf("header: %s", r.Header.Get("Authorization"))
+		usecase.SetCache("user_id", user.ID)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -103,6 +105,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Header.Set("Authorization", authToken)
+	usecase.SetCache("user_id", user.ID)
 
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }

@@ -9,27 +9,15 @@ import (
 	"log"
 	"strconv"
 	"tarikihongan-todo/db"
+	"tarikihongan-todo/internal/auth"
 	"tarikihongan-todo/models"
-	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // CreateTodo is the resolver for the CreateTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*models.Response, error) {
-	userID, success := usecase.GetCache("user_id")
-	if !success {
-		errMeg := "User not found."
-		return &models.Response{Success: false, Message: &errMeg}, nil
-	}
-
-	qm := models.UserWhere.ID.EQ(userID.(int))
-	user, err := models.Users(qm).One(ctx, db.DB)
-	if err != nil {
-		log.Fatal(err)
-		errMeg := err.Error()
-		return &models.Response{Success: false, Message: &errMeg}, err
-	}
+	user := auth.CurrentUser
 
 	todo := models.Todo{
 		Title:         title,
@@ -47,14 +35,21 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*model
 
 // UpdateTodo is the resolver for the UpdateTodo field.
 func (r *mutationResolver) UpdateTodo(ctx context.Context, id string, title string) (*models.Response, error) {
+	user := auth.CurrentUser
+
 	intID, err := strconv.Atoi(id)
 	if err != nil {
 		log.Fatal(err)
 		errMeg := err.Error()
 		return &models.Response{Success: false, Message: &errMeg}, err
 	}
+
 	qm := models.TodoWhere.ID.EQ(intID)
 	todo, err := models.Todos(qm).One(ctx, db.DB)
+	if todo.CreatedUserID != user.ID {
+		errMeg := "You don't have permission to update this todo."
+		return &models.Response{Success: false, Message: &errMeg}, nil
+	}
 	if err != nil {
 		log.Fatal(err)
 		errMeg := err.Error()
@@ -73,14 +68,21 @@ func (r *mutationResolver) UpdateTodo(ctx context.Context, id string, title stri
 
 // DeleteTodo is the resolver for the DeleteTodo field.
 func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (*models.Response, error) {
+	user := auth.CurrentUser
+
 	intID, err := strconv.Atoi(id)
 	if err != nil {
 		log.Fatal(err)
 		errMeg := err.Error()
 		return &models.Response{Success: false, Message: &errMeg}, err
 	}
+
 	qm := models.TodoWhere.ID.EQ(intID)
 	todo, err := models.Todos(qm).One(ctx, db.DB)
+	if todo.CreatedUserID != user.ID {
+		errMeg := "You don't have permission to update this todo."
+		return &models.Response{Success: false, Message: &errMeg}, nil
+	}
 	if err != nil {
 		log.Fatal(err)
 		errMeg := err.Error()

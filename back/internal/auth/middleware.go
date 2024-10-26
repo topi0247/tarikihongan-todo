@@ -9,6 +9,8 @@ import (
 
 var userCtxKey = &contextKey{"user"}
 
+var CurrentUser *models.User
+
 type contextKey struct {
 	name string
 }
@@ -36,6 +38,7 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 		ctx := context.WithValue(r.Context(), userCtxKey, &user)
+		CurrentUser = user
 
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)

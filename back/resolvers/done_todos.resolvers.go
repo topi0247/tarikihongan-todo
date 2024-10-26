@@ -6,11 +6,10 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"tarikihongan-todo/db"
+	"tarikihongan-todo/internal/auth"
 	"tarikihongan-todo/models"
-	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
@@ -18,39 +17,27 @@ import (
 
 // User is the resolver for the user field.
 func (r *doneTodoResolver) User(ctx context.Context, obj *models.DoneTodo) (*models.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	return obj.User().One(ctx, db.DB)
 }
 
 // Todo is the resolver for the todo field.
 func (r *doneTodoResolver) Todo(ctx context.Context, obj *models.DoneTodo) (*models.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todo - todo"))
+	return obj.Todo().One(ctx, db.DB)
 }
 
 // DoneAt is the resolver for the done_at field.
 func (r *doneTodoResolver) DoneAt(ctx context.Context, obj *models.DoneTodo) (string, error) {
-	panic(fmt.Errorf("not implemented: DoneAt - done_at"))
+	return obj.CreatedAt.Time.Format("2024/12/12 13:13"), nil
 }
 
 // CreateDoneTodoUser is the resolver for the CreateDoneTodoUser field.
 func (r *mutationResolver) CreateDoneTodoUser(ctx context.Context, todoID string) (*models.Response, error) {
-	userId, success := usecase.GetCache("user_id")
-	if !success {
-		errMsg := "User not found."
-		return &models.Response{Success: false, Message: &errMsg}, nil
-	}
-	qm := models.UserWhere.ID.EQ(userId.(int))
-	user, err := models.Users(qm).One(ctx, db.DB)
-	if err != nil {
-		errMsg := err.Error()
-		return &models.Response{Success: false, Message: &errMsg}, err
-	}
-
 	todoIntId, err := strconv.Atoi(todoID)
 	if err != nil {
 		errMsg := err.Error()
 		return &models.Response{Success: false, Message: &errMsg}, err
 	}
-	qm = models.TodoWhere.ID.EQ(todoIntId)
+	qm := models.TodoWhere.ID.EQ(todoIntId)
 	todo, err := models.Todos(qm).One(ctx, db.DB)
 	if err != nil {
 		errMsg := err.Error()
@@ -58,7 +45,7 @@ func (r *mutationResolver) CreateDoneTodoUser(ctx context.Context, todoID string
 	}
 
 	doneTodoUser := models.DoneTodo{
-		UserID: user.ID,
+		UserID: auth.CurrentUser.ID,
 		TodoID: todo.ID,
 	}
 	if err := doneTodoUser.Insert(ctx, db.DB, boil.Infer()); err != nil {
@@ -72,31 +59,24 @@ func (r *mutationResolver) CreateDoneTodoUser(ctx context.Context, todoID string
 
 // DeleteDoneTodoUser is the resolver for the DeleteDoneTodoUser field.
 func (r *mutationResolver) DeleteDoneTodoUser(ctx context.Context, todoID string) (*models.Response, error) {
-	userId, success := usecase.GetCache("user_id")
-	if !success {
-		errMsg := "User not found."
-		return &models.Response{Success: false, Message: &errMsg}, nil
-	}
-	qm := models.UserWhere.ID.EQ(userId.(int))
-	user, err := models.Users(qm).One(ctx, db.DB)
-	if err != nil {
-		errMsg := err.Error()
-		return &models.Response{Success: false, Message: &errMsg}, err
-	}
-
 	todoIntId, err := strconv.Atoi(todoID)
 	if err != nil {
 		errMsg := err.Error()
 		return &models.Response{Success: false, Message: &errMsg}, err
 	}
-	qm = models.TodoWhere.ID.EQ(todoIntId)
+	qm := models.TodoWhere.ID.EQ(todoIntId)
 	todo, err := models.Todos(qm).One(ctx, db.DB)
 	if err != nil {
 		errMsg := err.Error()
 		return &models.Response{Success: false, Message: &errMsg}, err
 	}
 
-	_, err = queries.Raw("delete from done_todo_users where user_id = $1 and todo_id = $2", user.ID, todo.ID).Exec(db.DB)
+	if auth.CurrentUser.ID != todo.CreatedUserID {
+		errMsg := "You don't have permission to delete this todo."
+		return &models.Response{Success: false, Message: &errMsg}, nil
+	}
+
+	_, err = queries.Raw("delete from done_todo_users where user_id = $1 and todo_id = $2", auth.CurrentUser.ID, todo.ID).Exec(db.DB)
 	if err != nil {
 		errMsg := err.Error()
 		return &models.Response{Success: false, Message: &errMsg}, err
