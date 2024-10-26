@@ -8,6 +8,8 @@ import "testing"
 // TestToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
+	t.Run("DoneTodoToTodoUsingTodo", testDoneTodoToOneTodoUsingTodo)
+	t.Run("DoneTodoToUserUsingUser", testDoneTodoToOneUserUsingUser)
 	t.Run("TodoToUserUsingCreatedUser", testTodoToOneUserUsingCreatedUser)
 }
 
@@ -18,12 +20,16 @@ func TestOneToOne(t *testing.T) {}
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
+	t.Run("TodoToDoneTodos", testTodoToManyDoneTodos)
+	t.Run("UserToDoneTodos", testUserToManyDoneTodos)
 	t.Run("UserToCreatedUserTodos", testUserToManyCreatedUserTodos)
 }
 
 // TestToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
+	t.Run("DoneTodoToTodoUsingDoneTodos", testDoneTodoToOneSetOpTodoUsingTodo)
+	t.Run("DoneTodoToUserUsingDoneTodos", testDoneTodoToOneSetOpUserUsingUser)
 	t.Run("TodoToUserUsingCreatedUserTodos", testTodoToOneSetOpUserUsingCreatedUser)
 }
 
@@ -42,6 +48,8 @@ func TestOneToOneRemove(t *testing.T) {}
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
+	t.Run("TodoToDoneTodos", testTodoToManyAddOpDoneTodos)
+	t.Run("UserToDoneTodos", testUserToManyAddOpDoneTodos)
 	t.Run("UserToCreatedUserTodos", testUserToManyAddOpCreatedUserTodos)
 }
 

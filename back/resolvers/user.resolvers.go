@@ -6,6 +6,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 	"tarikihongan-todo/db"
@@ -91,3 +92,63 @@ func (r *queryResolver) User(ctx context.Context, id string) (*models.User, erro
 	}
 	return user, nil
 }
+
+// TodosByUser is the resolver for the TodosByUser field.
+func (r *queryResolver) TodosByUser(ctx context.Context, userID *string) ([]*models.Todo, error) {
+	intId, err := strconv.Atoi(*userID)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	qm := models.TodoWhere.CreatedUserID.EQ(intId)
+	todos, err := models.Todos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	return todos, nil
+}
+
+// DoneTodos is the resolver for the DoneTodos field.
+func (r *queryResolver) DoneTodos(ctx context.Context, userID *string) ([]*models.Todo, error) {
+	panic(fmt.Errorf("not implemented: DoneTodos - DoneTodos"))
+}
+
+// Todos is the resolver for the todos field.
+func (r *userResolver) Todos(ctx context.Context, obj *models.User) ([]*models.Todo, error) {
+	qm := models.TodoWhere.CreatedUserID.EQ(obj.ID)
+	todos, err := models.Todos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	return todos, nil
+}
+
+// DoneTodos is the resolver for the done_todos field.
+func (r *userResolver) DoneTodos(ctx context.Context, obj *models.User) ([]*models.Todo, error) {
+	qm := models.DoneTodoWhere.UserID.EQ(obj.ID)
+	doneTodos, err := models.DoneTodos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+
+	ids := make([]int, len(doneTodos))
+	for _, doneTodo := range doneTodos {
+		ids = append(ids, doneTodo.TodoID)
+	}
+
+	qm = models.TodoWhere.ID.IN(ids)
+	todos, err := models.Todos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatalln(err)
+		return nil, err
+	}
+	return todos, nil
+}
+
+// User returns db.UserResolver implementation.
+func (r *Resolver) User() db.UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }

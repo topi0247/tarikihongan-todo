@@ -1,6 +1,8 @@
 extend type Query {
   Users: [User!]!
   User(id: ID!): User
+  TodosByUser(userId: ID): [Todo!]!
+  DoneTodos(userId: ID): [Todo!]!
 }
 
 extend type Mutation {
@@ -11,6 +13,8 @@ extend type Mutation {
 type User {
   id: ID!
   name: String!
+  todos: [Todo!]!
+  done_todos: [Todo!]!
 }
 
 extend type Response {

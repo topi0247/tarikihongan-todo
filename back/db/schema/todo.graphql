@@ -5,7 +5,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  CreateTodo(userId: ID! title: String!): Response!
+  CreateTodo(title: String!): Response!
   UpdateTodo(id: ID! title: String!): Response!
   DeleteTodo(id: ID!): Response!
 }
@@ -15,4 +15,5 @@ type Todo {
   title: String!
   created_user: User!
   created_at: String!
+  done_todo_users: [User!]!
 }

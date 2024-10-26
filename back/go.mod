@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.9
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/viper v1.19.0
 	github.com/vektah/gqlparser/v2 v2.5.18
 	github.com/volatiletech/null/v8 v8.1.2
@@ -19,17 +20,11 @@ require (
 )
 
 require (
-	github.com/gorilla/securecookie v1.1.2 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-)
-
-require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/sessions v1.4.0
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

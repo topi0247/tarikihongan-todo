@@ -63,29 +63,6 @@ var TodoTableColumns = struct {
 
 // Generated where
 
-type whereHelperint struct{ field string }
-
-func (w whereHelperint) EQ(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.EQ, x) }
-func (w whereHelperint) NEQ(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.NEQ, x) }
-func (w whereHelperint) LT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.LT, x) }
-func (w whereHelperint) LTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.LTE, x) }
-func (w whereHelperint) GT(x int) qm.QueryMod  { return qmhelper.Where(w.field, qmhelper.GT, x) }
-func (w whereHelperint) GTE(x int) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
-func (w whereHelperint) IN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
-}
-func (w whereHelperint) NIN(slice []int) qm.QueryMod {
-	values := make([]interface{}, 0, len(slice))
-	for _, value := range slice {
-		values = append(values, value)
-	}
-	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
-}
-
 type whereHelpertime_Time struct{ field string }
 
 func (w whereHelpertime_Time) EQ(x time.Time) qm.QueryMod {
@@ -124,13 +101,16 @@ var TodoWhere = struct {
 // TodoRels is where relationship names are stored.
 var TodoRels = struct {
 	CreatedUser string
+	DoneTodos   string
 }{
 	CreatedUser: "CreatedUser",
+	DoneTodos:   "DoneTodos",
 }
 
 // todoR is where relationships are stored.
 type todoR struct {
-	CreatedUser *User `boil:"CreatedUser" json:"CreatedUser" toml:"CreatedUser" yaml:"CreatedUser"`
+	CreatedUser *User         `boil:"CreatedUser" json:"CreatedUser" toml:"CreatedUser" yaml:"CreatedUser"`
+	DoneTodos   DoneTodoSlice `boil:"DoneTodos" json:"DoneTodos" toml:"DoneTodos" yaml:"DoneTodos"`
 }
 
 // NewStruct creates a new relationship struct
@@ -143,6 +123,13 @@ func (r *todoR) GetCreatedUser() *User {
 		return nil
 	}
 	return r.CreatedUser
+}
+
+func (r *todoR) GetDoneTodos() DoneTodoSlice {
+	if r == nil {
+		return nil
+	}
+	return r.DoneTodos
 }
 
 // todoL is where Load methods for each relationship are stored.
@@ -472,6 +459,20 @@ func (o *Todo) CreatedUser(mods ...qm.QueryMod) userQuery {
 	return Users(queryMods...)
 }
 
+// DoneTodos retrieves all the done_todo's DoneTodos with an executor.
+func (o *Todo) DoneTodos(mods ...qm.QueryMod) doneTodoQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("\"done_todo\".\"todo_id\"=?", o.ID),
+	)
+
+	return DoneTodos(queryMods...)
+}
+
 // LoadCreatedUser allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (todoL) LoadCreatedUser(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTodo interface{}, mods queries.Applicator) error {
@@ -592,6 +593,119 @@ func (todoL) LoadCreatedUser(ctx context.Context, e boil.ContextExecutor, singul
 	return nil
 }
 
+// LoadDoneTodos allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (todoL) LoadDoneTodos(ctx context.Context, e boil.ContextExecutor, singular bool, maybeTodo interface{}, mods queries.Applicator) error {
+	var slice []*Todo
+	var object *Todo
+
+	if singular {
+		var ok bool
+		object, ok = maybeTodo.(*Todo)
+		if !ok {
+			object = new(Todo)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeTodo)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeTodo))
+			}
+		}
+	} else {
+		s, ok := maybeTodo.(*[]*Todo)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeTodo)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeTodo))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &todoR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &todoR{}
+			}
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`done_todo`),
+		qm.WhereIn(`done_todo.todo_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load done_todo")
+	}
+
+	var resultSlice []*DoneTodo
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice done_todo")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on done_todo")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for done_todo")
+	}
+
+	if len(doneTodoAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.DoneTodos = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &doneTodoR{}
+			}
+			foreign.R.Todo = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.TodoID {
+				local.R.DoneTodos = append(local.R.DoneTodos, foreign)
+				if foreign.R == nil {
+					foreign.R = &doneTodoR{}
+				}
+				foreign.R.Todo = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetCreatedUser of the todo to the related item.
 // Sets o.R.CreatedUser to related.
 // Adds o to related.R.CreatedUserTodos.
@@ -636,6 +750,59 @@ func (o *Todo) SetCreatedUser(ctx context.Context, exec boil.ContextExecutor, in
 		related.R.CreatedUserTodos = append(related.R.CreatedUserTodos, o)
 	}
 
+	return nil
+}
+
+// AddDoneTodos adds the given related objects to the existing relationships
+// of the todo, optionally inserting them as new records.
+// Appends related to o.R.DoneTodos.
+// Sets related.R.Todo appropriately.
+func (o *Todo) AddDoneTodos(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*DoneTodo) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.TodoID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE \"done_todo\" SET %s WHERE %s",
+				strmangle.SetParamNames("\"", "\"", 1, []string{"todo_id"}),
+				strmangle.WhereClause("\"", "\"", 2, doneTodoPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.TodoID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &todoR{
+			DoneTodos: related,
+		}
+	} else {
+		o.R.DoneTodos = append(o.R.DoneTodos, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &doneTodoR{
+				Todo: o,
+			}
+		} else {
+			rel.R.Todo = o
+		}
+	}
 	return nil
 }
 

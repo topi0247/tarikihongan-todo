@@ -494,6 +494,159 @@ func testTodosInsertWhitelist(t *testing.T) {
 	}
 }
 
+func testTodoToManyDoneTodos(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Todo
+	var b, c DoneTodo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, todoDBTypes, true, todoColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Todo struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, doneTodoDBTypes, false, doneTodoColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, doneTodoDBTypes, false, doneTodoColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	b.TodoID = a.ID
+	c.TodoID = a.ID
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.DoneTodos().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.TodoID == b.TodoID {
+			bFound = true
+		}
+		if v.TodoID == c.TodoID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := TodoSlice{&a}
+	if err = a.L.LoadDoneTodos(ctx, tx, false, (*[]*Todo)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.DoneTodos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.DoneTodos = nil
+	if err = a.L.LoadDoneTodos(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.DoneTodos); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
+func testTodoToManyAddOpDoneTodos(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Todo
+	var b, c, d, e DoneTodo
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, todoDBTypes, false, strmangle.SetComplement(todoPrimaryKeyColumns, todoColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*DoneTodo{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, doneTodoDBTypes, false, strmangle.SetComplement(doneTodoPrimaryKeyColumns, doneTodoColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*DoneTodo{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddDoneTodos(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if a.ID != first.TodoID {
+			t.Error("foreign key was wrong value", a.ID, first.TodoID)
+		}
+		if a.ID != second.TodoID {
+			t.Error("foreign key was wrong value", a.ID, second.TodoID)
+		}
+
+		if first.R.Todo != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+		if second.R.Todo != &a {
+			t.Error("relationship was not added properly to the foreign slice")
+		}
+
+		if a.R.DoneTodos[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.DoneTodos[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.DoneTodos().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
 func testTodoToOneUserUsingCreatedUser(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))

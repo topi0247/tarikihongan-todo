@@ -10,21 +10,30 @@ import (
 	"strconv"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
+	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 // CreateTodo is the resolver for the CreateTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, userID string, title string) (*models.Response, error) {
-	intUserID, err := strconv.Atoi(userID)
+func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*models.Response, error) {
+	userID, success := usecase.GetCache("user_id")
+	if !success {
+		errMeg := "User not found."
+		return &models.Response{Success: false, Message: &errMeg}, nil
+	}
+
+	qm := models.UserWhere.ID.EQ(userID.(int))
+	user, err := models.Users(qm).One(ctx, db.DB)
 	if err != nil {
 		log.Fatal(err)
 		errMeg := err.Error()
 		return &models.Response{Success: false, Message: &errMeg}, err
 	}
+
 	todo := models.Todo{
 		Title:         title,
-		CreatedUserID: intUserID,
+		CreatedUserID: user.ID,
 	}
 	if err := todo.Insert(ctx, db.DB, boil.Infer()); err != nil {
 		log.Fatal(err)
@@ -145,15 +154,30 @@ func (r *todoResolver) CreatedAt(ctx context.Context, obj *models.Todo) (string,
 	return obj.CreatedAt.String(), nil
 }
 
-// Mutation returns db.MutationResolver implementation.
-func (r *Resolver) Mutation() db.MutationResolver { return &mutationResolver{r} }
+// DoneTodoUsers is the resolver for the done_todo_users field.
+func (r *todoResolver) DoneTodoUsers(ctx context.Context, obj *models.Todo) ([]*models.User, error) {
+	qm := models.DoneTodoWhere.TodoID.EQ(obj.ID)
+	doneTodos, err := models.DoneTodos(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
 
-// Query returns db.QueryResolver implementation.
-func (r *Resolver) Query() db.QueryResolver { return &queryResolver{r} }
+	ids := make([]int, len(doneTodos))
+	for i, doneTodo := range doneTodos {
+		ids[i] = doneTodo.UserID
+	}
+
+	qm = models.UserWhere.ID.IN(ids)
+	users, err := models.Users(qm).All(ctx, db.DB)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	return users, nil
+}
 
 // Todo returns db.TodoResolver implementation.
 func (r *Resolver) Todo() db.TodoResolver { return &todoResolver{r} }
 
-type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }
 type todoResolver struct{ *Resolver }

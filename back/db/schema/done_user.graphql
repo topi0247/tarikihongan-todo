@@ -1,0 +1,16 @@
+type DoneTodo {
+  id: ID!
+  user: User!
+  todo: Todo!
+  done_at: String!
+}
+
+extend type Query {
+  DoneTodoByUser(userId: ID): [DoneTodo!]!
+  DoneTodoByTodo(todoId: ID): [DoneTodo!]!
+}
+
+extend type Mutation {
+  CreateDoneTodoUser(todoId: ID!): Response!
+  DeleteDoneTodoUser(todoId: ID!): Response!
+}
