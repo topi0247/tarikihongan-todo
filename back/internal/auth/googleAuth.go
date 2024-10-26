@@ -1,4 +1,4 @@
-package usecase
+package auth
 
 import (
 	"context"
@@ -75,7 +75,13 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	qm := models.UserWhere.UID.EQ(userInfo.UID)
 	user, err := models.Users(qm).One(context.Background(), db.DB)
 	if err == nil {
-		SetCache("user_id", user.ID)
+		tokenAuth, err := GenerateToken(user.ID)
+		if err != nil {
+			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+			return
+		}
+		r.Header.Set("Authorization", tokenAuth)
+		log.Printf("header: %s", r.Header.Get("Authorization"))
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -91,6 +97,12 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Print("User created")
+	authToken, err := GenerateToken(user.ID)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+	r.Header.Set("Authorization", authToken)
 
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }

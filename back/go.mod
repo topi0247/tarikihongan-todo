@@ -19,6 +19,8 @@ require (
 	github.com/volatiletech/strmangle v0.0.7
 )
 
+require github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+
 require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
