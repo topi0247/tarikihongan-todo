@@ -1,4 +1,4 @@
-import { Headers } from "components/uis";
+import { Headers } from "components/layouts";
 
 export default function MainLayout({
   isPublic,

@@ -1,4 +1,4 @@
-import { MainLayout } from "components/uis";
+import { MainLayout } from "components/layouts";
 import { Path } from "constants/routes";
 import CreateTodo from "features/createTodo";
 import MyPage from "features/mypage";

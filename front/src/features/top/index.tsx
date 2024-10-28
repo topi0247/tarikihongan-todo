@@ -1,5 +1,5 @@
 import { LoginButton } from "components/uis";
-import TodoCard from "components/uis/todoCard";
+import TodoCard from "components/layouts/todoCard";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: i,

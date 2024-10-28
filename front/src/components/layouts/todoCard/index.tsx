@@ -1,3 +1,4 @@
+import Arrow from "components/uis/arrow";
 import { Todo } from "types";
 
 export default function TodoCard({ todo }: { todo: Todo }) {
@@ -5,6 +6,17 @@ export default function TodoCard({ todo }: { todo: Todo }) {
   const isCreateUserDone = todo.doneUsers.some(
     (todoUser) => todoUser.id === currentUser.id
   );
+
+  const handleRotateArrow = (
+    e: React.MouseEvent<HTMLInputElement, MouseEvent>,
+    id: Number
+  ) => {
+    const arrow = document.getElementById(`arrow-${id}`);
+    if (arrow) {
+      const check = e.currentTarget.checked;
+      arrow.style.transform = check ? "rotate(90deg)" : "rotate(0deg)";
+    }
+  };
 
   return (
     <div className="card bg-base-100 w-full shadow-xl border">
@@ -23,9 +35,18 @@ export default function TodoCard({ todo }: { todo: Todo }) {
             <button className="btn btn-primary px-3 py-2">やったよ！</button>
           )}
           <div className="collapse bg-base-200">
-            <input type="checkbox" />
+            <input
+              type="checkbox"
+              name={`doneUser-${todo.id}`}
+              onClick={(e) => handleRotateArrow(e, todo.id)}
+            />
             <div className="collapse-title flex justify-between items-center px-4">
-              <span>やった人たち</span>
+              <div className="flex gap-2 justify-center items-center">
+                <div id={`arrow-${todo.id}`}>
+                  <Arrow size={24} />
+                </div>
+                <span>やった人たち</span>
+              </div>
               <span>{todo.doneUsers.length}人</span>
             </div>
             <div className="collapse-content">

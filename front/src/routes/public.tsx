@@ -1,4 +1,4 @@
-import { MainLayout } from "components/uis";
+import { MainLayout } from "components/layouts";
 import { Path } from "constants/routes";
 import NotFound from "features/notFound";
 import Top from "features/top";
