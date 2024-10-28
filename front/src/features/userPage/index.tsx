@@ -1,6 +1,7 @@
 import TodoCard from "components/layouts/todoCard";
 import { useRecoilValue } from "recoil";
 import { userState } from "status";
+import { gql } from "@apollo/client";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: i,
@@ -13,7 +14,16 @@ const Todos = Array.from({ length: 10 }, (_, i) => ({
   })),
 }));
 
-export default function MyPage() {
+const UserDataQuery = gql`
+  query {
+    CurrentUser {
+      id
+      name
+    }
+  }
+`;
+
+export default function UserPage() {
   const currentUser = useRecoilValue(userState);
   return (
     <>

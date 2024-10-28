@@ -1,5 +1,7 @@
 import { Path } from "constants/routes";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { userState } from "status";
 
 const Themes = [
   "default",
@@ -29,11 +31,7 @@ const Themes = [
 ];
 
 export default function Headers({ isPublic }: { isPublic: boolean }) {
-  const navigate = useNavigate();
-
-  const handleLinkClick = (path: string) => {
-    navigate(path);
-  };
+  const currentUser = useRecoilValue(userState);
 
   return (
     <>
@@ -48,56 +46,30 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
             {isPublic && (
               <>
                 <li className="hidden md:block">
-                  <button
-                    type="button"
-                    onClick={() => handleLinkClick(Path.ROOT)}
-                  >
-                    Todo一覧
-                  </button>
+                  <Link to={Path.ROOT}>Todo一覧</Link>
                 </li>
                 <li className="hidden md:block">
-                  <button
-                    type="button"
-                    onClick={() => handleLinkClick(Path.CREATE_TODO)}
-                  >
-                    Todoを作る
-                  </button>
+                  <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                 </li>
                 <li className="hidden md:block">
-                  <button
-                    type="button"
-                    onClick={() => handleLinkClick(Path.MY_PAGE)}
-                  >
+                  <Link to={Path.USER_PAGE(String(currentUser.id))}>
                     マイページ
-                  </button>
+                  </Link>
                 </li>
                 <li className="md:hidden">
                   <details>
                     <summary>メニュー</summary>
                     <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32">
                       <li className="hidden md:block">
-                        <button
-                          type="button"
-                          onClick={() => handleLinkClick(Path.ROOT)}
-                        >
-                          Todo一覧
-                        </button>
+                        <Link to={Path.ROOT}>Todo一覧</Link>
                       </li>
                       <li>
-                        <button
-                          type="button"
-                          onClick={() => handleLinkClick(Path.CREATE_TODO)}
-                        >
-                          Todoを作る
-                        </button>
+                        <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                       </li>
                       <li>
-                        <button
-                          type="button"
-                          onClick={() => handleLinkClick(Path.MY_PAGE)}
-                        >
+                        <Link to={Path.USER_PAGE(String(currentUser.id))}>
                           マイページ
-                        </button>
+                        </Link>
                       </li>
                     </ul>
                   </details>

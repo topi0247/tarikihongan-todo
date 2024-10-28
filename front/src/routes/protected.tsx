@@ -1,7 +1,7 @@
 import { MainLayout } from "components/layouts";
 import { Path } from "constants/routes";
 import CreateTodo from "features/createTodo";
-import MyPage from "features/mypage";
+import UserPage from "features/userPage";
 import NotFound from "features/notFound";
 import Top from "features/top";
 import { Outlet } from "react-router-dom";
@@ -28,8 +28,9 @@ export const PRIVATE_ROUTES = [
         element: <CreateTodo />,
       },
       {
-        path: Path.MY_PAGE,
-        element: <MyPage />,
+        path: Path.USER_PAGE(":id"),
+        id: "userPage",
+        element: <UserPage />,
       },
       {
         path: "*",
