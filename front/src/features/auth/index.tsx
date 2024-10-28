@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { userState } from "status";
 import { useRecoilState } from "recoil";
 import { useQuery, gql } from "@apollo/client";
+import { User } from "types";
 
 const GET_USER = gql`
   query {
@@ -14,14 +15,12 @@ const GET_USER = gql`
 
 export const Auth = () => {
   const [user, setUser] = useRecoilState(userState);
-  const { loading, error, data } = useQuery(GET_USER);
+  const { data } = useQuery(GET_USER);
 
-  if (user.id) return null;
-  if (loading) return null;
-  if (error) return null;
-
-  if (data.CurrentUser) {
-    setUser(data.CurrentUser);
-  }
+  useEffect(() => {
+    if (data?.CurrentUser && user.id !== data.CurrentUser.id) {
+      setUser(data.CurrentUser as User);
+    }
+  }, [data]);
   return null;
 };

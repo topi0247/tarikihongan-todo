@@ -30,9 +30,7 @@ const Themes = [
   "nord",
 ];
 
-export default function Headers({ isPublic }: { isPublic: boolean }) {
-  const currentUser = useRecoilValue(userState);
-
+export default function Headers({ loginUserId }: { loginUserId: string }) {
   return (
     <>
       <div className="navbar bg-base-100">
@@ -43,7 +41,7 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
         </div>
         <div className="flex-none">
           <ul className="menu menu-horizontal px-1">
-            {isPublic && (
+            {loginUserId && (
               <>
                 <li className="hidden md:block">
                   <Link to={Path.ROOT}>Todo一覧</Link>
@@ -52,7 +50,10 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
                   <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                 </li>
                 <li className="hidden md:block">
-                  <Link to={Path.USER_PAGE(String(currentUser.id))}>
+                  <Link
+                    to={Path.USER_PAGE(String(loginUserId))}
+                    state={{ id: loginUserId }}
+                  >
                     マイページ
                   </Link>
                 </li>
@@ -67,7 +68,7 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
                         <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                       </li>
                       <li>
-                        <Link to={Path.USER_PAGE(String(currentUser.id))}>
+                        <Link to={Path.USER_PAGE(String(loginUserId))}>
                           マイページ
                         </Link>
                       </li>

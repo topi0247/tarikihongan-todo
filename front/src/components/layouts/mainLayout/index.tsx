@@ -1,16 +1,18 @@
 import { Headers } from "components/layouts";
+import { useRecoilValue } from "recoil";
+import { userState } from "status";
 
 export default function MainLayout({
-  isPublic,
   children,
 }: {
-  isPublic: boolean;
   children: React.ReactNode;
 }) {
+  const currentUser = useRecoilValue(userState);
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="shadow-xl mb-8">
-        <Headers isPublic={isPublic} />
+        <Headers loginUserId={currentUser?.id} />
       </header>
       <main className="grow container m-auto">{children}</main>
       <footer className="flex justify-end items-center p-2">

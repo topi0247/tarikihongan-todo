@@ -1,20 +1,20 @@
 export type Todo = {
-  id: Number;
-  title: String;
+  id: string;
+  title: string;
   created_user: User;
   created_at: string;
   done_users: Users[];
 };
 
 export type User = {
-  id: Number;
-  name: String;
+  id: string;
+  name: string;
   todos: Todo[] | null;
   done_todos: DoneTodo[] | null;
 };
 
 export type DoneTodo = {
-  id: Number;
+  id: string;
   user: User;
   todo: Todo;
 };

@@ -8,7 +8,7 @@ import { Outlet } from "react-router-dom";
 
 const App = () => {
   return (
-    <MainLayout isPublic={true}>
+    <MainLayout>
       <Outlet />
     </MainLayout>
   );

@@ -6,12 +6,12 @@ import { useLocation } from "react-router-dom";
 import { Todo, User } from "types";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
-  id: i,
+  id: String(i),
   title: `Todo ${i}`,
-  created_user: { id: i, name: `User ${i}`, todos: [], done_todos: [] } as User,
+  created_user: { id: String(i), name: `User ${i}` } as User,
   created_at: "2021/09/01",
   done_users: Array.from({ length: 3 }, (_, j) => ({
-    id: j,
+    id: String(j),
     name: `User ${j}`,
   })),
 }));
@@ -27,10 +27,17 @@ const UserDataQuery = gql`
   }
 `;
 
+type State = {
+  id: string;
+};
+
 export default function UserPage() {
   const currentUser = useRecoilValue(userState);
   const location = useLocation();
-  const userId = location.state as Number;
+  const userId = (location.state as State).id;
+
+  console.log(typeof userId);
+  console.log(typeof currentUser.id);
 
   return (
     <>

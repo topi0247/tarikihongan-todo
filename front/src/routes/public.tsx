@@ -6,7 +6,7 @@ import { Outlet } from "react-router-dom";
 
 const App = () => {
   return (
-    <MainLayout isPublic={false}>
+    <MainLayout>
       <Outlet />
     </MainLayout>
   );

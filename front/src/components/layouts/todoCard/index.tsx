@@ -2,6 +2,8 @@ import { useRecoilValue } from "recoil";
 import Arrow from "components/uis/arrow";
 import { userState } from "status";
 import { Todo } from "types";
+import { Path } from "constants/routes";
+import { Link } from "react-router-dom";
 
 export default function TodoCard({ todo }: { todo: Todo }) {
   const currentUser = useRecoilValue(userState);
@@ -11,7 +13,7 @@ export default function TodoCard({ todo }: { todo: Todo }) {
 
   const handleRotateArrow = (
     e: React.MouseEvent<HTMLInputElement, MouseEvent>,
-    id: Number
+    id: string
   ) => {
     const arrow = document.getElementById(`arrow-${id}`);
     if (arrow) {
@@ -24,12 +26,19 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     <div className="card bg-base-100 w-full shadow-xl border">
       <div className="card-body">
         <p>{todo.title}</p>
-        {currentUser.id !== todo.created_user.id && (
-          <p className="text-end text-sm">
-            created by {todo.created_user.name} ... created{" "}
-            <time dateTime={todo.created_at}>{todo.created_at}</time>
-          </p>
-        )}
+        <p className="text-end text-sm">
+          created by{" "}
+          <Link
+            className="text-secondary"
+            to={Path.USER_PAGE(todo.created_user.id)}
+            state={{ id: todo.created_user.id }}
+          >
+            {todo.created_user.id === currentUser.id
+              ? "あなた"
+              : todo.created_user.name}
+          </Link>{" "}
+          ... created <time dateTime={todo.created_at}>{todo.created_at}</time>
+        </p>
         <div className="card-actions justify-start">
           {isCreateUserDone ? (
             <p className="btn btn-disabled">終わったよ！</p>
