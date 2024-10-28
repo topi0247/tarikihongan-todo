@@ -5,8 +5,8 @@ import { Todo } from "types";
 
 export default function TodoCard({ todo }: { todo: Todo }) {
   const currentUser = useRecoilValue(userState);
-  const isCreateUserDone = todo.doneUsers.some(
-    (todoUser) => todoUser.id === currentUser.id
+  const isCreateUserDone = todo.done_users.some(
+    (doneUser) => doneUser.id === currentUser.id
   );
 
   const handleRotateArrow = (
@@ -24,9 +24,9 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     <div className="card bg-base-100 w-full shadow-xl border">
       <div className="card-body">
         <p>{todo.title}</p>
-        {currentUser.id !== todo.user.id && (
+        {currentUser.id !== todo.created_user.id && (
           <p className="text-end text-sm">
-            created by {todo.user.name} ... created{" "}
+            created by {todo.created_user.name} ... created{" "}
             <time dateTime={todo.created_at}>{todo.created_at}</time>
           </p>
         )}
@@ -49,11 +49,11 @@ export default function TodoCard({ todo }: { todo: Todo }) {
                 </div>
                 <span>やった人たち</span>
               </div>
-              <span>{todo.doneUsers.length}人</span>
+              <span>{todo.done_users.length}人</span>
             </div>
             <div className="collapse-content">
               <ul>
-                {todo.doneUsers.map((user, index) => (
+                {todo.done_users.map((user, index) => (
                   <li key={index}>
                     <span>{user.name}</span>
                   </li>

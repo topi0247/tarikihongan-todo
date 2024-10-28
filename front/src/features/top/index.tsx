@@ -1,12 +1,13 @@
 import { LoginButton } from "components/uis";
 import TodoCard from "components/layouts/todoCard";
+import { User } from "types";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: i,
   title: `Todo ${i}`,
-  user: { id: i, name: `User ${i}` },
+  created_user: { id: i, name: `User ${i}`, todos: [], done_todos: [] } as User,
   created_at: "2021/09/01",
-  doneUsers: Array.from({ length: 3 }, (_, j) => ({
+  done_users: Array.from({ length: 3 }, (_, j) => ({
     id: j,
     name: `User ${j}`,
   })),

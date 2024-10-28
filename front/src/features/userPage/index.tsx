@@ -2,47 +2,56 @@ import TodoCard from "components/layouts/todoCard";
 import { useRecoilValue } from "recoil";
 import { userState } from "status";
 import { gql } from "@apollo/client";
+import { useLocation } from "react-router-dom";
+import { Todo, User } from "types";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: i,
   title: `Todo ${i}`,
-  user: { id: i, name: `User ${i}` },
+  created_user: { id: i, name: `User ${i}`, todos: [], done_todos: [] } as User,
   created_at: "2021/09/01",
-  doneUsers: Array.from({ length: 3 }, (_, j) => ({
+  done_users: Array.from({ length: 3 }, (_, j) => ({
     id: j,
     name: `User ${j}`,
   })),
 }));
 
 const UserDataQuery = gql`
-  query {
-    CurrentUser {
+  query ($id: ID!) {
+    User(id: $id) {
       id
       name
+      todos
+      done_todos
     }
   }
 `;
 
 export default function UserPage() {
   const currentUser = useRecoilValue(userState);
+  const location = useLocation();
+  const userId = location.state as Number;
+
   return (
     <>
       <article>
         <section className="flex flex-col gap-2">
           <p className="text-xl text-center">{currentUser.name}</p>
-          <form className="flex gap-2 justify-center items-center">
-            <div className="flex gap-2 w-auto justify-center items-center">
-              <label htmlFor="name">名前</label>
-              <input
-                type="text"
-                placeholder="name"
-                className="input input-bordered w-2/3 max-w-xs"
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">
-              変更
-            </button>
-          </form>
+          {userId === currentUser.id && (
+            <form className="flex gap-2 justify-center items-center">
+              <div className="flex gap-2 w-auto justify-center items-center">
+                <label htmlFor="name">名前</label>
+                <input
+                  type="text"
+                  placeholder="name"
+                  className="input input-bordered w-2/3 max-w-xs"
+                />
+              </div>
+              <button type="submit" className="btn btn-primary">
+                変更
+              </button>
+            </form>
+          )}
         </section>
       </article>
       <article className="grid grid-cols-1 gap-3 m-4">

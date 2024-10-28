@@ -86,11 +86,11 @@ type ComplexityRoot struct {
 	}
 
 	Todo struct {
-		CreatedAt     func(childComplexity int) int
-		CreatedUser   func(childComplexity int) int
-		DoneTodoUsers func(childComplexity int) int
-		ID            func(childComplexity int) int
-		Title         func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		CreatedUser func(childComplexity int) int
+		DoneUsers   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Title       func(childComplexity int) int
 	}
 
 	User struct {
@@ -130,7 +130,7 @@ type QueryResolver interface {
 type TodoResolver interface {
 	CreatedUser(ctx context.Context, obj *models.Todo) (*models.User, error)
 	CreatedAt(ctx context.Context, obj *models.Todo) (string, error)
-	DoneTodoUsers(ctx context.Context, obj *models.Todo) ([]*models.User, error)
+	DoneUsers(ctx context.Context, obj *models.Todo) ([]*models.User, error)
 }
 type UserResolver interface {
 	Todos(ctx context.Context, obj *models.User) ([]*models.Todo, error)
@@ -396,12 +396,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Todo.CreatedUser(childComplexity), true
 
-	case "Todo.done_todo_users":
-		if e.complexity.Todo.DoneTodoUsers == nil {
+	case "Todo.done_users":
+		if e.complexity.Todo.DoneUsers == nil {
 			break
 		}
 
-		return e.complexity.Todo.DoneTodoUsers(childComplexity), true
+		return e.complexity.Todo.DoneUsers(childComplexity), true
 
 	case "Todo.id":
 		if e.complexity.Todo.ID == nil {
@@ -1262,8 +1262,8 @@ func (ec *executionContext) fieldContext_DoneTodo_todo(_ context.Context, field 
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -1908,8 +1908,8 @@ func (ec *executionContext) fieldContext_Query_Todos(_ context.Context, field gr
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -1961,8 +1961,8 @@ func (ec *executionContext) fieldContext_Query_TodoByID(ctx context.Context, fie
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -2028,8 +2028,8 @@ func (ec *executionContext) fieldContext_Query_TodoByCreatedUser(ctx context.Con
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -2211,8 +2211,8 @@ func (ec *executionContext) fieldContext_Query_TodosByUser(ctx context.Context, 
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -2278,8 +2278,8 @@ func (ec *executionContext) fieldContext_Query_DoneTodos(ctx context.Context, fi
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -2752,8 +2752,8 @@ func (ec *executionContext) fieldContext_Todo_created_at(_ context.Context, fiel
 	return fc, nil
 }
 
-func (ec *executionContext) _Todo_done_todo_users(ctx context.Context, field graphql.CollectedField, obj *models.Todo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Todo_done_todo_users(ctx, field)
+func (ec *executionContext) _Todo_done_users(ctx context.Context, field graphql.CollectedField, obj *models.Todo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Todo_done_users(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2766,7 +2766,7 @@ func (ec *executionContext) _Todo_done_todo_users(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Todo().DoneTodoUsers(rctx, obj)
+		return ec.resolvers.Todo().DoneUsers(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2783,7 +2783,7 @@ func (ec *executionContext) _Todo_done_todo_users(ctx context.Context, field gra
 	return ec.marshalNUser2ᚕᚖtarikihonganᚑtodoᚋmodelsᚐUserᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Todo_done_todo_users(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Todo_done_users(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Todo",
 		Field:      field,
@@ -2941,8 +2941,8 @@ func (ec *executionContext) fieldContext_User_todos(_ context.Context, field gra
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -2997,8 +2997,8 @@ func (ec *executionContext) fieldContext_User_done_todos(_ context.Context, fiel
 				return ec.fieldContext_Todo_created_user(ctx, field)
 			case "created_at":
 				return ec.fieldContext_Todo_created_at(ctx, field)
-			case "done_todo_users":
-				return ec.fieldContext_Todo_done_todo_users(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
@@ -5423,7 +5423,7 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "done_todo_users":
+		case "done_users":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -5432,7 +5432,7 @@ func (ec *executionContext) _Todo(ctx context.Context, sel ast.SelectionSet, obj
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Todo_done_todo_users(ctx, field, obj)
+				res = ec._Todo_done_users(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
