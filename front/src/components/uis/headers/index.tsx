@@ -1,5 +1,4 @@
 import { Path } from "constants/routes";
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Themes = [
@@ -30,13 +29,9 @@ const Themes = [
 ];
 
 export default function Headers({ isPublic }: { isPublic: boolean }) {
-  const [openMemu, setOpenMenu] = useState(false);
-  const [openTheme, setOpenTheme] = useState(false);
   const navigate = useNavigate();
 
   const handleLinkClick = (path: string) => {
-    setOpenMenu(false);
-    setOpenTheme(false);
     navigate(path);
   };
 
@@ -54,6 +49,14 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
               <li className="hidden md:block">
                 <button
                   type="button"
+                  onClick={() => handleLinkClick(Path.ROOT)}
+                >
+                  Todo一覧
+                </button>
+              </li>
+              <li className="hidden md:block">
+                <button
+                  type="button"
                   onClick={() => handleLinkClick(Path.CREATE_TODO)}
                 >
                   Todoを作る
@@ -68,11 +71,17 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
                 </button>
               </li>
               <li className="md:hidden">
-                <details open={openMemu}>
-                  <summary onClick={() => setOpenMenu(!openMemu)}>
-                    メニュー
-                  </summary>
+                <details>
+                  <summary>メニュー</summary>
                   <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32">
+                    <li className="hidden md:block">
+                      <button
+                        type="button"
+                        onClick={() => handleLinkClick(Path.ROOT)}
+                      >
+                        Todo一覧
+                      </button>
+                    </li>
                     <li>
                       <button
                         type="button"
@@ -94,10 +103,10 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
               </li>
             </>
           )}
-          <li className="hidden">
+          <li className="hidden md:block">
             <details>
               <summary>カラーテーマ</summary>
-              <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 overflow-y-auto h-64">
+              <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 overflow-y-auto h-64 z-50">
                 {Themes.map((theme) => (
                   <li key={theme}>
                     <input
