@@ -1,9 +1,10 @@
 import TodoCard from "components/layouts/todoCard";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { userState } from "status";
-import { gql } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useLocation } from "react-router-dom";
 import { Todo, User } from "types";
+import { useEffect, useState } from "react";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: String(i),
@@ -27,17 +28,52 @@ const UserDataQuery = gql`
   }
 `;
 
+const UpdateMutation = gql`
+  mutation ($name: String!) {
+    UpdateUser(name: $name) {
+      success
+      message
+    }
+  }
+`;
+
 type State = {
   id: string;
 };
 
 export default function UserPage() {
-  const currentUser = useRecoilValue(userState);
+  const [currentUser, setCurrentUser] = useRecoilState(userState);
+  const [newUserName, setNewUserName] = useState("");
   const location = useLocation();
   const userId = (location.state as State).id;
+  // const {
+  //   data,
+  //   loading,
+  //   error: userError,
+  // } = useQuery(UserDataQuery, { variables: { id: userId } });
+  const [
+    updateUser,
+    { data: updatedData, loading: updatedLoading, error: updatedError },
+  ] = useMutation(UpdateMutation);
 
-  console.log(typeof userId);
-  console.log(typeof currentUser.id);
+  useEffect(() => {
+    if (updatedError) {
+      alert("エラーが発生しました");
+    }
+  }, [updatedError]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newUserName) {
+      alert("名前を入力してください");
+      return;
+    }
+
+    await updateUser({ variables: { name: newUserName } });
+
+    setCurrentUser({ ...currentUser, name: newUserName });
+    setNewUserName("");
+  };
 
   return (
     <>
@@ -45,16 +81,26 @@ export default function UserPage() {
         <section className="flex flex-col gap-2">
           <p className="text-xl text-center">{currentUser.name}</p>
           {userId === currentUser.id && (
-            <form className="flex gap-2 justify-center items-center">
+            <form
+              className="flex gap-2 justify-center items-center"
+              onSubmit={(e) => handleSubmit(e)}
+            >
               <div className="flex gap-2 w-auto justify-center items-center">
                 <label htmlFor="name">名前</label>
                 <input
+                  name="name"
                   type="text"
                   placeholder="name"
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
                   className="input input-bordered w-2/3 max-w-xs"
                 />
               </div>
-              <button type="submit" className="btn btn-primary">
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={updatedLoading}
+              >
                 変更
               </button>
             </form>
