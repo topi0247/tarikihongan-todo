@@ -3,6 +3,7 @@ extend type Query {
   User(id: ID!): User
   TodosByUser(userId: ID): [Todo!]!
   DoneTodos(userId: ID): [Todo!]!
+  CurrentUser: User!
 }
 
 extend type Mutation {

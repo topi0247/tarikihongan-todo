@@ -6,22 +6,18 @@ toolchain go1.23.2
 
 require (
 	github.com/99designs/gqlgen v0.17.55
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/joho/godotenv v1.5.1
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/lib/pq v1.10.9
-	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.19.0
 	github.com/vektah/gqlparser/v2 v2.5.18
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
 	github.com/volatiletech/strmangle v0.0.7
-)
-
-require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
-	github.com/rs/cors v1.11.1 // indirect
 )
 
 require (

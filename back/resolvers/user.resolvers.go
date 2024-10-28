@@ -112,6 +112,11 @@ func (r *queryResolver) DoneTodos(ctx context.Context, userID *string) ([]*model
 	return todos, nil
 }
 
+// CurrentUser is the resolver for the CurrentUser field.
+func (r *queryResolver) CurrentUser(ctx context.Context) (*models.User, error) {
+	return auth.CurrentUser, nil
+}
+
 // Todos is the resolver for the todos field.
 func (r *userResolver) Todos(ctx context.Context, obj *models.User) ([]*models.Todo, error) {
 	qm := models.TodoWhere.CreatedUserID.EQ(obj.ID)

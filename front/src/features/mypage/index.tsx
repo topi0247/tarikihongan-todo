@@ -1,4 +1,6 @@
 import TodoCard from "components/layouts/todoCard";
+import { useRecoilValue } from "recoil";
+import { userState } from "status";
 
 const Todos = Array.from({ length: 10 }, (_, i) => ({
   id: i,
@@ -12,11 +14,12 @@ const Todos = Array.from({ length: 10 }, (_, i) => ({
 }));
 
 export default function MyPage() {
+  const currentUser = useRecoilValue(userState);
   return (
     <>
       <article>
         <section className="flex flex-col gap-2">
-          <p className="text-xl text-center">ユーザー名</p>
+          <p className="text-xl text-center">{currentUser.name}</p>
           <form className="flex gap-2 justify-center items-center">
             <div className="flex gap-2 w-auto justify-center items-center">
               <label htmlFor="name">名前</label>

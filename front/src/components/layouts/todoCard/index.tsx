@@ -1,8 +1,10 @@
+import { useRecoilValue } from "recoil";
 import Arrow from "components/uis/arrow";
+import { userState } from "status";
 import { Todo } from "types";
 
 export default function TodoCard({ todo }: { todo: Todo }) {
-  const currentUser = { id: 1, name: "User 1" };
+  const currentUser = useRecoilValue(userState);
   const isCreateUserDone = todo.doneUsers.some(
     (todoUser) => todoUser.id === currentUser.id
   );

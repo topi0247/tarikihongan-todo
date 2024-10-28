@@ -17,14 +17,14 @@ type contextKey struct {
 
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		header := r.Header.Get("Authorization")
+		cookie, err := r.Cookie("_tarikihongan_todo")
 
-		if header == "" {
+		if err != nil {
 			next.ServeHTTP(w, r)
 			return
 		}
 
-		tokenStr := header
+		tokenStr := cookie.Value
 		userId, err := ParseToken(tokenStr)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusForbidden)
