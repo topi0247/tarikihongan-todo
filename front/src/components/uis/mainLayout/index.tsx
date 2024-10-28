@@ -9,7 +9,7 @@ export default function MainLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <header>
+      <header className="shadow-xl mb-8">
         <Headers isPublic={isPublic} />
       </header>
       <main className="grow container m-auto">{children}</main>

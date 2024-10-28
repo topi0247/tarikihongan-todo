@@ -94,7 +94,7 @@ export default function Headers({ isPublic }: { isPublic: boolean }) {
               </li>
             </>
           )}
-          <li>
+          <li className="hidden">
             <details>
               <summary>カラーテーマ</summary>
               <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 overflow-y-auto h-64">
