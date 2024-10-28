@@ -1,6 +1,6 @@
 import { Path } from "constants/routes";
 import { useState } from "react";
-import { Link, useNavigate, useRoutes } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Themes = [
   "default",

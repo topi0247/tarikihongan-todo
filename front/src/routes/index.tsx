@@ -3,7 +3,7 @@ import { PRIVATE_ROUTES } from "./protected";
 import { PUBLIC_ROUTES } from "./public";
 
 export const AppRoutes = () => {
-  const currentUser = null;
+  const currentUser = true;
   const routes = currentUser ? PRIVATE_ROUTES : PUBLIC_ROUTES;
   const element = useRoutes([...routes]);
 

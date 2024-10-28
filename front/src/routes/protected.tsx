@@ -8,7 +8,7 @@ import { Outlet } from "react-router-dom";
 
 const App = () => {
   return (
-    <MainLayout isPublic={false}>
+    <MainLayout isPublic={true}>
       <Outlet />
     </MainLayout>
   );
@@ -34,7 +34,7 @@ export const PRIVATE_ROUTES = [
       {
         path: "*",
         element: <NotFound />,
-      }
+      },
     ],
   },
 ];
