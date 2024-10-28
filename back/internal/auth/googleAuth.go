@@ -8,7 +8,6 @@ import (
 	"os"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
-	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
@@ -75,6 +74,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	qm := models.UserWhere.UID.EQ(userInfo.UID)
 	user, err := models.Users(qm).One(context.Background(), db.DB)
+	redirectUrl := os.Getenv("FRONT_URL")
 	if err == nil {
 		tokenAuth, err := GenerateToken(user.ID)
 		if err != nil {
@@ -83,8 +83,8 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r.Header.Set("Authorization", tokenAuth)
 		log.Printf("header: %s", r.Header.Get("Authorization"))
-		usecase.SetCache("user_id", user.ID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		setCookie(w, tokenAuth)
+		http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 		return
 	}
 
@@ -105,7 +105,20 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	r.Header.Set("Authorization", authToken)
-	usecase.SetCache("user_id", user.ID)
+	setCookie(w, authToken)
+	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
+}
 
-	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+func setCookie(w http.ResponseWriter, tokenAuth string) {
+	secure := true
+	if os.Getenv("ENV") == "development" {
+		secure = false
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     "_tarikihongan_todo",
+		Value:    tokenAuth,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   secure,
+	})
 }

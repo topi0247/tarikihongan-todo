@@ -11,7 +11,6 @@ import (
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/internal/auth"
 	"tarikihongan-todo/models"
-	"tarikihongan-todo/usecase"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -33,20 +32,7 @@ func (r *mutationResolver) UpdateUser(ctx context.Context, name string) (*models
 
 // DeleteUser is the resolver for the DeleteUser field.
 func (r *mutationResolver) DeleteUser(ctx context.Context) (*models.Response, error) {
-	userId, success := usecase.GetCache("user_id")
-	if !success {
-		errMsg := "User not found."
-		return &models.Response{Success: false, Message: &errMsg}, nil
-	}
-
-	qm := models.UserWhere.ID.EQ(userId.(int))
-	user, err := models.Users(qm).One(ctx, db.DB)
-	if err != nil {
-		log.Fatalln(err)
-		errMsg := err.Error()
-		return &models.Response{Success: false, Message: &errMsg}, err
-	}
-
+	user := auth.CurrentUser
 	if _, err := user.Delete(ctx, db.DB); err != nil {
 		log.Fatalln(err)
 		errMsg := err.Error()

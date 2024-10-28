@@ -19,7 +19,10 @@ require (
 	github.com/volatiletech/strmangle v0.0.7
 )
 
-require github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/rs/cors v1.11.1 // indirect
+)
 
 require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect

@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -43,5 +44,14 @@ func main() {
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", server)
 	middleware := auth.Middleware(router)
-	log.Fatal(http.ListenAndServe(":8080", middleware))
+
+	frontURL := os.Getenv("FRONT_URL")
+	corsOption := cors.New(cors.Options{
+		AllowedOrigins:   []string{frontURL},
+		AllowedMethods:   []string{"GET", "POST", "POST", "PUT", "OPTIONS"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
+		AllowCredentials: true,
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", corsOption.Handler(middleware)))
 }
