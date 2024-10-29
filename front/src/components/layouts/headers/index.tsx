@@ -57,6 +57,15 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                     マイページ
                   </Link>
                 </li>
+                <li className="hidden md:block">
+                  <a
+                    href="https://twitter.com/intent/tweet?text=誰か代わりにやってくれ！\n新感覚Todoアプリ「他力本願Todo」でTodo管理！¥n#他力本願Todo&url=https://tarikihongan-todo.vercel.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Xシェア
+                  </a>
+                </li>
                 <li className="md:hidden">
                   <details>
                     <summary>メニュー</summary>
