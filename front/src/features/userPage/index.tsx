@@ -1,4 +1,4 @@
-import TodoCard from "components/layouts/todoCard";
+import { TodoCard } from "components/layouts";
 import { useRecoilState } from "recoil";
 import { userState } from "status";
 import { gql, useMutation, useQuery } from "@apollo/client";

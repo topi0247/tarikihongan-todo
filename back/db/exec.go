@@ -110,7 +110,7 @@ type MutationResolver interface {
 	CreateDoneTodoUser(ctx context.Context, todoID string) (*models.Response, error)
 	DeleteDoneTodoUser(ctx context.Context, todoID string) (*models.Response, error)
 	CreateTodo(ctx context.Context, title string) (*models.Response, error)
-	UpdateTodo(ctx context.Context, id string, title string) (*models.Response, error)
+	UpdateTodo(ctx context.Context, id string, title string) (*models.Todo, error)
 	DeleteTodo(ctx context.Context, id string) (*models.Response, error)
 	UpdateUser(ctx context.Context, name string) (*models.Response, error)
 	DeleteUser(ctx context.Context) (*models.Response, error)
@@ -1519,14 +1519,11 @@ func (ec *executionContext) _Mutation_UpdateTodo(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Response)
+	res := resTmp.(*models.Todo)
 	fc.Result = res
-	return ec.marshalNResponse2ᚖtarikihonganᚑtodoᚋmodelsᚐResponse(ctx, field.Selections, res)
+	return ec.marshalOTodo2ᚖtarikihonganᚑtodoᚋmodelsᚐTodo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_UpdateTodo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1537,12 +1534,18 @@ func (ec *executionContext) fieldContext_Mutation_UpdateTodo(ctx context.Context
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "success":
-				return ec.fieldContext_Response_success(ctx, field)
-			case "message":
-				return ec.fieldContext_Response_message(ctx, field)
+			case "id":
+				return ec.fieldContext_Todo_id(ctx, field)
+			case "title":
+				return ec.fieldContext_Todo_title(ctx, field)
+			case "created_user":
+				return ec.fieldContext_Todo_created_user(ctx, field)
+			case "created_at":
+				return ec.fieldContext_Todo_created_at(ctx, field)
+			case "done_users":
+				return ec.fieldContext_Todo_done_users(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Response", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Todo", field.Name)
 		},
 	}
 	defer func() {
@@ -4975,9 +4978,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_UpdateTodo(ctx, field)
 			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
 		case "DeleteTodo":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_DeleteTodo(ctx, field)

@@ -6,7 +6,7 @@ extend type Query {
 
 extend type Mutation {
   CreateTodo(title: String!): Response!
-  UpdateTodo(id: ID!, title: String!): Response!
+  UpdateTodo(id: ID!, title: String!): Todo
   DeleteTodo(id: ID!): Response!
 }
 

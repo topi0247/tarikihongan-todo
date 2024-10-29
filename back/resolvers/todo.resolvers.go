@@ -34,36 +34,31 @@ func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*model
 }
 
 // UpdateTodo is the resolver for the UpdateTodo field.
-func (r *mutationResolver) UpdateTodo(ctx context.Context, id string, title string) (*models.Response, error) {
+func (r *mutationResolver) UpdateTodo(ctx context.Context, id string, title string) (*models.Todo, error) {
 	user := auth.CurrentUser
 
 	intID, err := strconv.Atoi(id)
 	if err != nil {
 		log.Fatal(err)
-		errMeg := err.Error()
-		return &models.Response{Success: false, Message: &errMeg}, err
+		return nil, err
 	}
 
 	qm := models.TodoWhere.ID.EQ(intID)
 	todo, err := models.Todos(qm).One(ctx, db.DB)
 	if todo.CreatedUserID != user.ID {
-		errMeg := "You don't have permission to update this todo."
-		return &models.Response{Success: false, Message: &errMeg}, nil
+		return nil, nil
 	}
 	if err != nil {
 		log.Fatal(err)
-		errMeg := err.Error()
-		return &models.Response{Success: false, Message: &errMeg}, err
+		return nil, err
 	}
 	todo.Title = title
 	if _, err := todo.Update(ctx, db.DB, boil.Infer()); err != nil {
 		log.Fatal(err)
-		errMeg := err.Error()
-		return &models.Response{Success: false, Message: &errMeg}, err
+		return nil, err
 	}
 
-	successMeg := "Todo updated successfully."
-	return &models.Response{Success: true, Message: &successMeg}, nil
+	return todo, nil
 }
 
 // DeleteTodo is the resolver for the DeleteTodo field.

@@ -1,5 +1,5 @@
 import { useRecoilValue } from "recoil";
-import Arrow from "components/uis/arrow";
+import { Arrow, EditIcon } from "components/uis";
 import { userState } from "status";
 import { Todo, User } from "types";
 import { Path } from "constants/routes";
@@ -25,11 +25,21 @@ const DeleteDone = gql`
   }
 `;
 
+const UpdateTodo = gql`
+  mutation ($id: ID!, $title: String!) {
+    UpdateTodo(id: $id, title: $title) {
+      title
+    }
+  }
+`;
+
 export default function TodoCard({ todo }: { todo: Todo }) {
   const currentUser = useRecoilValue(userState);
+  const enableEdit = todo.id === currentUser.id;
   const isCreateUserDone = todo.done_users.some(
     (doneUser) => doneUser.id === currentUser.id
   );
+  const [isEdit, setIsEdit] = useState(false);
   const [isDone, setIsDone] = useState(isCreateUserDone);
   const [createDoneTodoUser] = useMutation(PostDone, {
     update(cache, { data }) {
@@ -72,6 +82,21 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     },
   });
 
+  const [updateTodo] = useMutation(UpdateTodo, {
+    update(cache, { data }) {
+      if (data?.UpdateTodo?.title) {
+        cache.modify({
+          id: cache.identify(todo),
+          fields: {
+            title() {
+              return data.UpdateTodo.title;
+            },
+          },
+        });
+      }
+    },
+  });
+
   const handleRotateArrow = (
     e: React.MouseEvent<HTMLInputElement, MouseEvent>,
     id: string
@@ -93,10 +118,56 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     setIsDone(false);
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const title = formData.get("title") as string;
+    if (!title) {
+      alert("タイトルを入力してください");
+      return;
+    }
+
+    await updateTodo({ variables: { id: todo.id, title: title } });
+    form.reset();
+    setIsEdit(false);
+  };
+
   return (
     <div className="card bg-base-100 w-full shadow-xl border">
       <div className="card-body">
-        <p>{todo.title}</p>
+        {enableEdit && isEdit ? (
+          <form
+            onSubmit={(e) => handleSubmit(e)}
+            className="flex justify-center items-center gap-2"
+          >
+            <input
+              type="text"
+              name="title"
+              defaultValue={todo.title}
+              className="input input-bordered w-full max-w-xs"
+            />
+            <button type="submit" className="btn btn-primary">
+              更新
+            </button>
+            <button
+              type="button"
+              className="btn btn-default"
+              onClick={() => setIsEdit(false)}
+            >
+              戻る
+            </button>
+          </form>
+        ) : (
+          <div className="flex justify-center items-center">
+            <p>{todo.title}</p>
+            {enableEdit && (
+              <button type="button" onClick={() => setIsEdit(true)}>
+                <EditIcon />
+              </button>
+            )}
+          </div>
+        )}
         <p className="text-end text-sm">
           created by{" "}
           <Link
@@ -149,7 +220,11 @@ export default function TodoCard({ todo }: { todo: Todo }) {
               <ul>
                 {todo.done_users.map((user, index) => (
                   <li key={index}>
-                    <Link className="text-secondary" to={Path.USER_PAGE(user.id)} state={{ id: user.id }}>
+                    <Link
+                      className="text-secondary"
+                      to={Path.USER_PAGE(user.id)}
+                      state={{ id: user.id }}
+                    >
                       {user.name}
                     </Link>
                   </li>
