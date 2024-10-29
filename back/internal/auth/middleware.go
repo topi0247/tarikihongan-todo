@@ -30,6 +30,7 @@ func Middleware(next http.Handler) http.Handler {
 		tokenStr := cookie.Value
 		userId, err := ParseToken(tokenStr)
 		if err != nil {
+			CurrentUser = nil
 			http.Error(w, "Invalid token", http.StatusForbidden)
 			return
 		}
@@ -37,6 +38,7 @@ func Middleware(next http.Handler) http.Handler {
 		qm := models.UserWhere.ID.EQ(userId)
 		user, err := models.Users(qm).One(r.Context(), db.DB)
 		if err != nil {
+			CurrentUser = nil
 			next.ServeHTTP(w, r)
 			return
 		}

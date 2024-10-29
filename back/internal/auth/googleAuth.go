@@ -84,6 +84,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("token: %s", tokenAuth)
 
 		setCookie(w, tokenAuth)
+		w.Header().Set("Authorization", "Bearer "+tokenAuth)
 		http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 		return
 	}
@@ -106,6 +107,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("token: %s", tokenAuth)
 	setCookie(w, tokenAuth)
+	w.Header().Set("Authorization", "Bearer "+tokenAuth)
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
