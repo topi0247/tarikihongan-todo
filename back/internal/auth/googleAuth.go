@@ -12,8 +12,6 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"crypto/rand"
-	"math/big"
 )
 
 const (
@@ -25,7 +23,7 @@ var googleOauthConfig *oauth2.Config
 
 type GoogleUserInfo struct {
 	Name string `json:"name"`
-	UID  string `json:"id"`
+	Sub  string `json:"sub"`
 }
 
 func Init() {
@@ -40,12 +38,9 @@ func Init() {
 }
 
 func RedirectToGoogleAuth(w http.ResponseWriter, r *http.Request) {
-	random, err := generateRandomState()
-	if err != nil {
-		http.Error(w, "Failed to generate random state", http.StatusInternalServerError)
-		return
-	}
-	url := googleOauthConfig.AuthCodeURL(random, oauth2.AccessTypeOffline)
+	// Cookieがあれば削除
+	clearCookie(w)
+	url := googleOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
@@ -77,7 +72,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	qm := models.UserWhere.UID.EQ(userInfo.UID)
+	qm := models.UserWhere.UID.EQ(userInfo.Sub)
 	user, err := models.Users(qm).One(context.Background(), db.DB)
 	redirectUrl := os.Getenv("FRONT_URL")
 	if err == nil {
@@ -88,6 +83,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		r.Header.Set("Authorization", tokenAuth)
 		log.Printf("header: %s", r.Header.Get("Authorization"))
+
 		setCookie(w, tokenAuth)
 		http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 		return
@@ -95,7 +91,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	user = &models.User{
 		Name:     userInfo.Name,
-		UID:      userInfo.UID,
+		UID:      userInfo.Sub,
 		Provider: "google-oauth2",
 	}
 
@@ -103,7 +99,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to insert user", http.StatusInternalServerError)
 		return
 	}
-	log.Print("User created")
+	log.Printf("User created: %v", user)
 	authToken, err := GenerateToken(user.ID)
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
@@ -128,16 +124,17 @@ func setCookie(w http.ResponseWriter, tokenAuth string) {
 	})
 }
 
-func generateRandomState() (string, error) {
-	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	const length = 32
-	state := make([]byte, length)
-	for i := range state {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			return "", err
-		}
-		state[i] = letters[num.Int64()]
+func clearCookie(w http.ResponseWriter) {
+	secure := true
+	if os.Getenv("ENV") == "development" {
+		secure = false
 	}
-	return string(state), nil
+	http.SetCookie(w, &http.Cookie{
+		Name:     "_tarikihongan_todo",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   secure,
+	})
 }
