@@ -27,6 +27,10 @@ export default function CreateTodo() {
       return;
     }
 
+    if (title.length > 30) {
+      alert("タイトルは30文字以内で入力してください");
+      return;
+    }
     await postTodo({ variables: { title: title } });
 
     if (data?.createTodo.success) {

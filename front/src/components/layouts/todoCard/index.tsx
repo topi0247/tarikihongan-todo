@@ -128,6 +128,11 @@ export default function TodoCard({ todo }: { todo: Todo }) {
       return;
     }
 
+    if (title.length > 30) {
+      alert("タイトルは30文字以内で入力してください");
+      return;
+    }
+
     await updateTodo({ variables: { id: todo.id, title: title } });
     form.reset();
     setIsEdit(false);
