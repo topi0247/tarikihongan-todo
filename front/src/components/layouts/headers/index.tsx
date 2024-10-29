@@ -59,7 +59,7 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                 </li>
                 <li className="hidden md:block">
                   <a
-                    href="https://twitter.com/intent/tweet?text=誰か代わりにやってくれ！\n新感覚Todoアプリ「他力本願Todo」でTodo管理！¥n#他力本願Todo&url=https://tarikihongan-todo.vercel.app"
+                    href="https://x.com/intent/tweet?text=誰か代わりにやってくれ！%0A新感覚Todoアプリ「他力本願Todo」でTodo管理！%0A%23他力本願Todo&url=https%3A%2F%2Ftarikihongan-todo.vercel.app"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
