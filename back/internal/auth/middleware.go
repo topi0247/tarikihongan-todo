@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
@@ -18,8 +19,10 @@ type contextKey struct {
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("_tarikihongan_todo")
+		log.Printf("MiddlewareErr: %v", err)
 
 		if err != nil {
+			CurrentUser = nil
 			next.ServeHTTP(w, r)
 			return
 		}

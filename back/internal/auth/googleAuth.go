@@ -6,8 +6,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
+	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
@@ -38,8 +40,6 @@ func Init() {
 }
 
 func RedirectToGoogleAuth(w http.ResponseWriter, r *http.Request) {
-	// Cookieがあれば削除
-	clearCookie(w)
 	url := googleOauthConfig.AuthCodeURL("state", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -76,13 +76,13 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := models.Users(qm).One(context.Background(), db.DB)
 	redirectUrl := os.Getenv("FRONT_URL")
 	if err == nil {
+		log.Printf("User created: %v", user)
 		tokenAuth, err := GenerateToken(user.ID)
 		if err != nil {
 			http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 			return
 		}
-		r.Header.Set("Authorization", tokenAuth)
-		log.Printf("header: %s", r.Header.Get("Authorization"))
+		log.Printf("token: %s", tokenAuth)
 
 		setCookie(w, tokenAuth)
 		http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
@@ -100,40 +100,55 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("User created: %v", user)
-	authToken, err := GenerateToken(user.ID)
+	tokenAuth, err := GenerateToken(user.ID)
 	if err != nil {
 		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
 		return
 	}
-	r.Header.Set("Authorization", authToken)
-	setCookie(w, authToken)
+	log.Printf("token: %s", tokenAuth)
+	setCookie(w, tokenAuth)
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
+}
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	clearCookie(w, "_tarikihongan_todo")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("ok"))
 }
 
 func setCookie(w http.ResponseWriter, tokenAuth string) {
 	secure := true
+	frontUrl := "tarikihongan-todo.vercel.app"
 	if os.Getenv("ENV") == "development" {
+		log.Println("setCookie development")
 		secure = false
+		frontUrl = "localhost"
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "_tarikihongan_todo",
 		Value:    tokenAuth,
+		Domain:   frontUrl,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   secure,
 	})
 }
 
-func clearCookie(w http.ResponseWriter) {
+func clearCookie(w http.ResponseWriter, tokenAuth string) {
 	secure := true
+	domain := strings.Split(os.Getenv("FRONT_URL"), "//")[1]
 	if os.Getenv("ENV") == "development" {
 		secure = false
+		domain = "localhost"
 	}
+
 	http.SetCookie(w, &http.Cookie{
-		Name:     "_tarikihongan_todo",
+		Name:     tokenAuth,
 		Value:    "",
+		Domain:   domain,
 		Path:     "/",
 		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		Secure:   secure,
 	})

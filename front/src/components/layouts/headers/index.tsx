@@ -1,5 +1,9 @@
+import { useApolloClient } from "@apollo/client";
 import { Path } from "constants/routes";
 import { Link } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
+import { userState } from "status";
+import { User } from "types";
 
 const Themes = [
   "default",
@@ -29,6 +33,30 @@ const Themes = [
 ];
 
 export default function Headers({ loginUserId }: { loginUserId: string }) {
+  const setCurrentUser = useSetRecoilState(userState);
+  const apolloClient = useApolloClient();
+
+  const handleClick = async () => {
+    const API_URL = process.env.REACT_APP_BACK_URL || "http://localhost:8080";
+    try {
+      const response = await fetch(`${API_URL}/logout`, {
+        method: "delete",
+        credentials: "include",
+      });
+      console.log(response);
+      if (response.ok) {
+        console.log("ログアウトしました");
+        setCurrentUser({ id: "", name: "" } as User);
+        await apolloClient.refetchQueries({
+          include: "active",
+        });
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("ログアウトに失敗しました");
+    }
+  };
+
   return (
     <>
       <div className="navbar bg-base-100">
@@ -54,6 +82,11 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                   >
                     マイページ
                   </Link>
+                </li>
+                <li className="hidden md:block">
+                  <button type="button" onClick={() => handleClick()}>
+                    ログアウト
+                  </button>
                 </li>
                 <li className="hidden md:block">
                   <a

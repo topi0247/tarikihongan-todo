@@ -41,6 +41,7 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc("/google", auth.RedirectToGoogleAuth)
 	router.HandleFunc("/google/callback", auth.GoogleCallbackHandler)
+	router.HandleFunc("/logout", auth.LogoutHandler)
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	router.Handle("/query", server)
 	middleware := auth.Middleware(router)
@@ -48,7 +49,7 @@ func main() {
 	frontURL := os.Getenv("FRONT_URL")
 	corsOption := cors.New(cors.Options{
 		AllowedOrigins:   []string{frontURL},
-		AllowedMethods:   []string{"GET", "POST", "POST", "PUT", "OPTIONS"},
+		AllowedMethods:   []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 		AllowCredentials: true,
 	})

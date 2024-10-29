@@ -21,6 +21,6 @@ export const Auth = () => {
     if (data?.CurrentUser && user.id !== data.CurrentUser.id) {
       setUser(data.CurrentUser as User);
     }
-  }, [data]);
+  }, [data, user, setUser]);
   return null;
 };
