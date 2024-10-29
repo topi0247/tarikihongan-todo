@@ -153,7 +153,7 @@ func (r *todoResolver) CreatedUser(ctx context.Context, obj *models.Todo) (*mode
 
 // CreatedAt is the resolver for the created_at field.
 func (r *todoResolver) CreatedAt(ctx context.Context, obj *models.Todo) (string, error) {
-	return obj.CreatedAt.String(), nil
+	return obj.CreatedAt.Format("2006/01/02 15:04"), nil
 }
 
 // DoneUsers is the resolver for the done_users field.
