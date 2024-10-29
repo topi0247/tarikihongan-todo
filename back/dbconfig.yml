@@ -6,6 +6,6 @@ development:
 
 production:
   dialect: postgres
-  datasource: host=$DB_HOST port=$DB_PORT user=$DB_USER password=$DB_PASSWORD dbname=$DB_NAME
+  datasource: host=$DB_HOST port=5432 user=$DB_USER password=$DB_PASS dbname=$DB_NAME
   dir: db/migrations
   table: migrations
