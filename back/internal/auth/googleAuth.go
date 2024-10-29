@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
 	"time"
@@ -111,7 +110,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	clearCookie(w, "_tarikihongan_todo")
+	clearCookie(w)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }
@@ -137,22 +136,25 @@ func setCookie(w http.ResponseWriter, tokenAuth string) {
 	})
 }
 
-func clearCookie(w http.ResponseWriter, tokenAuth string) {
+func clearCookie(w http.ResponseWriter) {
 	secure := true
-	domain := strings.Split(os.Getenv("FRONT_URL"), "//")[1]
+	frontUrl := "tarikihongan-todo.vercel.app"
+	sameSite := http.SameSiteNoneMode
 	if os.Getenv("ENV") == "development" {
 		secure = false
-		domain = "localhost"
+		frontUrl = "localhost"
+		sameSite = http.SameSiteLaxMode
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     tokenAuth,
+		Name:     "_tarikihongan_todo",
 		Value:    "",
-		Domain:   domain,
+		Domain:   frontUrl,
 		Path:     "/",
 		MaxAge:   -1,
 		Expires:  time.Unix(0, 0),
 		HttpOnly: true,
 		Secure:   secure,
+		SameSite: sameSite,
 	})
 }
