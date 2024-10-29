@@ -67,7 +67,20 @@ export default function UserPage() {
   const [
     updateUser,
     { data: updatedData, loading: updatedLoading, error: updatedError },
-  ] = useMutation(UpdateMutation);
+  ] = useMutation(UpdateMutation, {
+    update(cache, { data }) {
+      if (data?.UpdateUser.success) {
+        cache.modify({
+          id: cache.identify(currentUser),
+          fields: {
+            name() {
+              return newUserName;
+            },
+          },
+        });
+      }
+    },
+  });
 
   useEffect(() => {
     if (updatedError) {
