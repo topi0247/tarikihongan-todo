@@ -1,18 +1,41 @@
 import { gql, useMutation } from "@apollo/client";
 import { Path } from "constants/routes";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const postQuery = gql`
   mutation ($title: String!) {
     CreateTodo(title: $title) {
-      success
-      message
+      id
+      title
     }
   }
 `;
 
 export default function CreateTodo() {
-  const [postTodo, { data, loading, error }] = useMutation(postQuery);
+  const [postTodo, { loading, error }] = useMutation(postQuery, {
+    update(cache, { data }) {
+      if (data?.CreateTodo?.id) {
+        cache.modify({
+          id: cache.identify({ __typename: "Todo", todos: [] }),
+          fields: {
+            todos(existingTodos = []) {
+              const newTodoRef = cache.writeFragment({
+                data: data.CreateTodo.todo,
+                fragment: gql`
+                  fragment NewTodo on Todo {
+                    id
+                    title
+                  }
+                `,
+              });
+              return [...existingTodos, newTodoRef];
+            },
+          },
+        });
+      }
+    },
+  });
+  const navigate = useNavigate();
 
   if (error) {
     alert("エラーが発生しました");
@@ -32,11 +55,7 @@ export default function CreateTodo() {
       return;
     }
     await postTodo({ variables: { title: title } });
-
-    if (data?.createTodo.success) {
-      alert("Todoを作成しました");
-    }
-    (e.target as HTMLFormElement).reset();
+    navigate(Path.ROOT);
   };
 
   return (

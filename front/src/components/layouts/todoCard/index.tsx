@@ -1,5 +1,5 @@
 import { useRecoilValue } from "recoil";
-import { Arrow, EditIcon } from "components/uis";
+import { Arrow, DeleteIcon, EditIcon } from "components/uis";
 import { userState } from "status";
 import { Todo, User } from "types";
 import { Path } from "constants/routes";
@@ -33,9 +33,18 @@ const UpdateTodo = gql`
   }
 `;
 
+const DeleteTodo = gql`
+  mutation ($id: ID!) {
+    DeleteTodo(id: $id) {
+      success
+      message
+    }
+  }
+`;
+
 export default function TodoCard({ todo }: { todo: Todo }) {
   const currentUser = useRecoilValue(userState);
-  const enableEdit = todo.id === currentUser.id;
+  const enableEdit = todo.created_user.id === currentUser.id;
   const isCreateUserDone = todo.done_users.some(
     (doneUser) => doneUser.id === currentUser.id
   );
@@ -97,6 +106,15 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     },
   });
 
+  const [deleteTodo] = useMutation(DeleteTodo, {
+    update(cache, { data }) {
+      if (data?.DeleteTodo?.success) {
+        cache.evict({ id: cache.identify(todo) });
+        cache.gc();
+      }
+    },
+  });
+
   const handleRotateArrow = (
     e: React.MouseEvent<HTMLInputElement, MouseEvent>,
     id: string
@@ -138,6 +156,13 @@ export default function TodoCard({ todo }: { todo: Todo }) {
     setIsEdit(false);
   };
 
+  const handleDelete = async () => {
+    const result = window.confirm("本当に削除しますか？");
+    if (!result) return;
+
+    await deleteTodo({ variables: { id: todo.id } });
+  };
+
   return (
     <div className="card bg-base-100 w-full shadow-xl border">
       <div className="card-body">
@@ -167,9 +192,14 @@ export default function TodoCard({ todo }: { todo: Todo }) {
           <div className="flex justify-center items-center">
             <p>{todo.title}</p>
             {enableEdit && (
-              <button type="button" onClick={() => setIsEdit(true)}>
-                <EditIcon />
-              </button>
+              <>
+                <button type="button" onClick={() => setIsEdit(true)}>
+                  <EditIcon />
+                </button>
+                <button type="button" onClick={() => handleDelete()}>
+                  <DeleteIcon />
+                </button>
+              </>
             )}
           </div>
         )}

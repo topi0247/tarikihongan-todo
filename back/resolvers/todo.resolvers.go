@@ -16,21 +16,19 @@ import (
 )
 
 // CreateTodo is the resolver for the CreateTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*models.Response, error) {
+func (r *mutationResolver) CreateTodo(ctx context.Context, title string) (*models.Todo, error) {
 	user := auth.CurrentUser
 
-	todo := models.Todo{
+	todo := &models.Todo{
 		Title:         title,
 		CreatedUserID: user.ID,
 	}
 	if err := todo.Insert(ctx, db.DB, boil.Infer()); err != nil {
 		log.Fatal(err)
-		errMeg := err.Error()
-		return &models.Response{Success: false, Message: &errMeg}, err
+		return nil, err
 	}
 
-	successMeg := "Todo created successfully."
-	return &models.Response{Success: true, Message: &successMeg}, nil
+	return todo, nil
 }
 
 // UpdateTodo is the resolver for the UpdateTodo field.

@@ -12,6 +12,8 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"crypto/rand"
+	"math/big"
 )
 
 const (
@@ -38,7 +40,12 @@ func Init() {
 }
 
 func RedirectToGoogleAuth(w http.ResponseWriter, r *http.Request) {
-	url := googleOauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	random, err := generateRandomState()
+	if err != nil {
+		http.Error(w, "Failed to generate random state", http.StatusInternalServerError)
+		return
+	}
+	url := googleOauthConfig.AuthCodeURL(random, oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
@@ -119,4 +126,18 @@ func setCookie(w http.ResponseWriter, tokenAuth string) {
 		HttpOnly: true,
 		Secure:   secure,
 	})
+}
+
+func generateRandomState() (string, error) {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	const length = 32
+	state := make([]byte, length)
+	for i := range state {
+		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
+		if err != nil {
+			return "", err
+		}
+		state[i] = letters[num.Int64()]
+	}
+	return string(state), nil
 }
