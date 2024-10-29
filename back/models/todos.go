@@ -467,7 +467,7 @@ func (o *Todo) DoneTodos(mods ...qm.QueryMod) doneTodoQuery {
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("\"done_todo\".\"todo_id\"=?", o.ID),
+		qm.Where("\"done_todos\".\"todo_id\"=?", o.ID),
 	)
 
 	return DoneTodos(queryMods...)
@@ -648,8 +648,8 @@ func (todoL) LoadDoneTodos(ctx context.Context, e boil.ContextExecutor, singular
 	}
 
 	query := NewQuery(
-		qm.From(`done_todo`),
-		qm.WhereIn(`done_todo.todo_id in ?`, argsSlice...),
+		qm.From(`done_todos`),
+		qm.WhereIn(`done_todos.todo_id in ?`, argsSlice...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -657,19 +657,19 @@ func (todoL) LoadDoneTodos(ctx context.Context, e boil.ContextExecutor, singular
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load done_todo")
+		return errors.Wrap(err, "failed to eager load done_todos")
 	}
 
 	var resultSlice []*DoneTodo
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice done_todo")
+		return errors.Wrap(err, "failed to bind eager loaded slice done_todos")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on done_todo")
+		return errors.Wrap(err, "failed to close results in eager load on done_todos")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for done_todo")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for done_todos")
 	}
 
 	if len(doneTodoAfterSelectHooks) != 0 {
@@ -767,7 +767,7 @@ func (o *Todo) AddDoneTodos(ctx context.Context, exec boil.ContextExecutor, inse
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE \"done_todo\" SET %s WHERE %s",
+				"UPDATE \"done_todos\" SET %s WHERE %s",
 				strmangle.SetParamNames("\"", "\"", 1, []string{"todo_id"}),
 				strmangle.WhereClause("\"", "\"", 2, doneTodoPrimaryKeyColumns),
 			)

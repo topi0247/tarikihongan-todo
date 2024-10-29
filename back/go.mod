@@ -21,6 +21,11 @@ require (
 )
 
 require (
+	github.com/volatiletech/null v8.0.0+incompatible // indirect
+	github.com/volatiletech/sqlboiler v3.7.1+incompatible
+)
+
+require (
 	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	github.com/agnivade/levenshtein v1.2.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect

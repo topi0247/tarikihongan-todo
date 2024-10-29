@@ -4,12 +4,12 @@
 package models
 
 var TableNames = struct {
-	DoneTodo       string
+	DoneTodos      string
 	GorpMigrations string
 	Todos          string
 	Users          string
 }{
-	DoneTodo:       "done_todo",
+	DoneTodos:      "done_todos",
 	GorpMigrations: "gorp_migrations",
 	Todos:          "todos",
 	Users:          "users",

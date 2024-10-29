@@ -55,11 +55,11 @@ var DoneTodoTableColumns = struct {
 	CreatedAt string
 	UpdatedAt string
 }{
-	ID:        "done_todo.id",
-	UserID:    "done_todo.user_id",
-	TodoID:    "done_todo.todo_id",
-	CreatedAt: "done_todo.created_at",
-	UpdatedAt: "done_todo.updated_at",
+	ID:        "done_todos.id",
+	UserID:    "done_todos.user_id",
+	TodoID:    "done_todos.todo_id",
+	CreatedAt: "done_todos.created_at",
+	UpdatedAt: "done_todos.updated_at",
 }
 
 // Generated where
@@ -118,11 +118,11 @@ var DoneTodoWhere = struct {
 	CreatedAt whereHelpernull_Time
 	UpdatedAt whereHelpernull_Time
 }{
-	ID:        whereHelperint{field: "\"done_todo\".\"id\""},
-	UserID:    whereHelperint{field: "\"done_todo\".\"user_id\""},
-	TodoID:    whereHelperint{field: "\"done_todo\".\"todo_id\""},
-	CreatedAt: whereHelpernull_Time{field: "\"done_todo\".\"created_at\""},
-	UpdatedAt: whereHelpernull_Time{field: "\"done_todo\".\"updated_at\""},
+	ID:        whereHelperint{field: "\"done_todos\".\"id\""},
+	UserID:    whereHelperint{field: "\"done_todos\".\"user_id\""},
+	TodoID:    whereHelperint{field: "\"done_todos\".\"todo_id\""},
+	CreatedAt: whereHelpernull_Time{field: "\"done_todos\".\"created_at\""},
+	UpdatedAt: whereHelpernull_Time{field: "\"done_todos\".\"updated_at\""},
 }
 
 // DoneTodoRels is where relationship names are stored.
@@ -414,7 +414,7 @@ func (q doneTodoQuery) One(ctx context.Context, exec boil.ContextExecutor) (*Don
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: failed to execute a one query for done_todo")
+		return nil, errors.Wrap(err, "models: failed to execute a one query for done_todos")
 	}
 
 	if err := o.doAfterSelectHooks(ctx, exec); err != nil {
@@ -453,7 +453,7 @@ func (q doneTodoQuery) Count(ctx context.Context, exec boil.ContextExecutor) (in
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to count done_todo rows")
+		return 0, errors.Wrap(err, "models: failed to count done_todos rows")
 	}
 
 	return count, nil
@@ -469,7 +469,7 @@ func (q doneTodoQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (b
 
 	err := q.Query.QueryRowContext(ctx, exec).Scan(&count)
 	if err != nil {
-		return false, errors.Wrap(err, "models: failed to check if done_todo exists")
+		return false, errors.Wrap(err, "models: failed to check if done_todos exists")
 	}
 
 	return count > 0, nil
@@ -749,7 +749,7 @@ func (o *DoneTodo) SetTodo(ctx context.Context, exec boil.ContextExecutor, inser
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"done_todo\" SET %s WHERE %s",
+		"UPDATE \"done_todos\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"todo_id"}),
 		strmangle.WhereClause("\"", "\"", 2, doneTodoPrimaryKeyColumns),
 	)
@@ -796,7 +796,7 @@ func (o *DoneTodo) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 	}
 
 	updateQuery := fmt.Sprintf(
-		"UPDATE \"done_todo\" SET %s WHERE %s",
+		"UPDATE \"done_todos\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, []string{"user_id"}),
 		strmangle.WhereClause("\"", "\"", 2, doneTodoPrimaryKeyColumns),
 	)
@@ -833,10 +833,10 @@ func (o *DoneTodo) SetUser(ctx context.Context, exec boil.ContextExecutor, inser
 
 // DoneTodos retrieves all the records using an executor.
 func DoneTodos(mods ...qm.QueryMod) doneTodoQuery {
-	mods = append(mods, qm.From("\"done_todo\""))
+	mods = append(mods, qm.From("\"done_todos\""))
 	q := NewQuery(mods...)
 	if len(queries.GetSelect(q)) == 0 {
-		queries.SetSelect(q, []string{"\"done_todo\".*"})
+		queries.SetSelect(q, []string{"\"done_todos\".*"})
 	}
 
 	return doneTodoQuery{q}
@@ -852,7 +852,7 @@ func FindDoneTodo(ctx context.Context, exec boil.ContextExecutor, iD int, select
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from \"done_todo\" where \"id\"=$1", sel,
+		"select %s from \"done_todos\" where \"id\"=$1", sel,
 	)
 
 	q := queries.Raw(query, iD)
@@ -862,7 +862,7 @@ func FindDoneTodo(ctx context.Context, exec boil.ContextExecutor, iD int, select
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, sql.ErrNoRows
 		}
-		return nil, errors.Wrap(err, "models: unable to select from done_todo")
+		return nil, errors.Wrap(err, "models: unable to select from done_todos")
 	}
 
 	if err = doneTodoObj.doAfterSelectHooks(ctx, exec); err != nil {
@@ -876,7 +876,7 @@ func FindDoneTodo(ctx context.Context, exec boil.ContextExecutor, iD int, select
 // See boil.Columns.InsertColumnSet documentation to understand column list inference for inserts.
 func (o *DoneTodo) Insert(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) error {
 	if o == nil {
-		return errors.New("models: no done_todo provided for insertion")
+		return errors.New("models: no done_todos provided for insertion")
 	}
 
 	var err error
@@ -919,9 +919,9 @@ func (o *DoneTodo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 			return err
 		}
 		if len(wl) != 0 {
-			cache.query = fmt.Sprintf("INSERT INTO \"done_todo\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
+			cache.query = fmt.Sprintf("INSERT INTO \"done_todos\" (\"%s\") %%sVALUES (%s)%%s", strings.Join(wl, "\",\""), strmangle.Placeholders(dialect.UseIndexPlaceholders, len(wl), 1, 1))
 		} else {
-			cache.query = "INSERT INTO \"done_todo\" %sDEFAULT VALUES%s"
+			cache.query = "INSERT INTO \"done_todos\" %sDEFAULT VALUES%s"
 		}
 
 		var queryOutput, queryReturning string
@@ -949,7 +949,7 @@ func (o *DoneTodo) Insert(ctx context.Context, exec boil.ContextExecutor, column
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "models: unable to insert into done_todo")
+		return errors.Wrap(err, "models: unable to insert into done_todos")
 	}
 
 	if !cached {
@@ -990,10 +990,10 @@ func (o *DoneTodo) Update(ctx context.Context, exec boil.ContextExecutor, column
 			wl = strmangle.SetComplement(wl, []string{"created_at"})
 		}
 		if len(wl) == 0 {
-			return 0, errors.New("models: unable to update done_todo, could not build whitelist")
+			return 0, errors.New("models: unable to update done_todos, could not build whitelist")
 		}
 
-		cache.query = fmt.Sprintf("UPDATE \"done_todo\" SET %s WHERE %s",
+		cache.query = fmt.Sprintf("UPDATE \"done_todos\" SET %s WHERE %s",
 			strmangle.SetParamNames("\"", "\"", 1, wl),
 			strmangle.WhereClause("\"", "\"", len(wl)+1, doneTodoPrimaryKeyColumns),
 		)
@@ -1013,12 +1013,12 @@ func (o *DoneTodo) Update(ctx context.Context, exec boil.ContextExecutor, column
 	var result sql.Result
 	result, err = exec.ExecContext(ctx, cache.query, values...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update done_todo row")
+		return 0, errors.Wrap(err, "models: unable to update done_todos row")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by update for done_todo")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by update for done_todos")
 	}
 
 	if !cached {
@@ -1036,12 +1036,12 @@ func (q doneTodoQuery) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to update all for done_todo")
+		return 0, errors.Wrap(err, "models: unable to update all for done_todos")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for done_todo")
+		return 0, errors.Wrap(err, "models: unable to retrieve rows affected for done_todos")
 	}
 
 	return rowsAff, nil
@@ -1074,7 +1074,7 @@ func (o DoneTodoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := fmt.Sprintf("UPDATE \"done_todo\" SET %s WHERE %s",
+	sql := fmt.Sprintf("UPDATE \"done_todos\" SET %s WHERE %s",
 		strmangle.SetParamNames("\"", "\"", 1, colNames),
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), len(colNames)+1, doneTodoPrimaryKeyColumns, len(o)))
 
@@ -1099,7 +1099,7 @@ func (o DoneTodoSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
 func (o *DoneTodo) Upsert(ctx context.Context, exec boil.ContextExecutor, updateOnConflict bool, conflictColumns []string, updateColumns, insertColumns boil.Columns, opts ...UpsertOptionFunc) error {
 	if o == nil {
-		return errors.New("models: no done_todo provided for upsert")
+		return errors.New("models: no done_todos provided for upsert")
 	}
 	if !boil.TimestampsAreSkipped(ctx) {
 		currTime := time.Now().In(boil.GetLocation())
@@ -1164,7 +1164,7 @@ func (o *DoneTodo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		)
 
 		if updateOnConflict && len(update) == 0 {
-			return errors.New("models: unable to upsert done_todo, could not build update column list")
+			return errors.New("models: unable to upsert done_todos, could not build update column list")
 		}
 
 		ret := strmangle.SetComplement(doneTodoAllColumns, strmangle.SetIntersect(insert, update))
@@ -1172,13 +1172,13 @@ func (o *DoneTodo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		conflict := conflictColumns
 		if len(conflict) == 0 && updateOnConflict && len(update) != 0 {
 			if len(doneTodoPrimaryKeyColumns) == 0 {
-				return errors.New("models: unable to upsert done_todo, could not build conflict column list")
+				return errors.New("models: unable to upsert done_todos, could not build conflict column list")
 			}
 
 			conflict = make([]string, len(doneTodoPrimaryKeyColumns))
 			copy(conflict, doneTodoPrimaryKeyColumns)
 		}
-		cache.query = buildUpsertQueryPostgres(dialect, "\"done_todo\"", updateOnConflict, ret, update, conflict, insert, opts...)
+		cache.query = buildUpsertQueryPostgres(dialect, "\"done_todos\"", updateOnConflict, ret, update, conflict, insert, opts...)
 
 		cache.valueMapping, err = queries.BindMapping(doneTodoType, doneTodoMapping, insert)
 		if err != nil {
@@ -1213,7 +1213,7 @@ func (o *DoneTodo) Upsert(ctx context.Context, exec boil.ContextExecutor, update
 		_, err = exec.ExecContext(ctx, cache.query, vals...)
 	}
 	if err != nil {
-		return errors.Wrap(err, "models: unable to upsert done_todo")
+		return errors.Wrap(err, "models: unable to upsert done_todos")
 	}
 
 	if !cached {
@@ -1237,7 +1237,7 @@ func (o *DoneTodo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), doneTodoPrimaryKeyMapping)
-	sql := "DELETE FROM \"done_todo\" WHERE \"id\"=$1"
+	sql := "DELETE FROM \"done_todos\" WHERE \"id\"=$1"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1246,12 +1246,12 @@ func (o *DoneTodo) Delete(ctx context.Context, exec boil.ContextExecutor) (int64
 	}
 	result, err := exec.ExecContext(ctx, sql, args...)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete from done_todo")
+		return 0, errors.Wrap(err, "models: unable to delete from done_todos")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for done_todo")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by delete for done_todos")
 	}
 
 	if err := o.doAfterDeleteHooks(ctx, exec); err != nil {
@@ -1271,12 +1271,12 @@ func (q doneTodoQuery) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 	result, err := q.Query.ExecContext(ctx, exec)
 	if err != nil {
-		return 0, errors.Wrap(err, "models: unable to delete all from done_todo")
+		return 0, errors.Wrap(err, "models: unable to delete all from done_todos")
 	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for done_todo")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for done_todos")
 	}
 
 	return rowsAff, nil
@@ -1302,7 +1302,7 @@ func (o DoneTodoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "DELETE FROM \"done_todo\" WHERE " +
+	sql := "DELETE FROM \"done_todos\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, doneTodoPrimaryKeyColumns, len(o))
 
 	if boil.IsDebug(ctx) {
@@ -1317,7 +1317,7 @@ func (o DoneTodoSlice) DeleteAll(ctx context.Context, exec boil.ContextExecutor)
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
-		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for done_todo")
+		return 0, errors.Wrap(err, "models: failed to get rows affected by deleteall for done_todos")
 	}
 
 	if len(doneTodoAfterDeleteHooks) != 0 {
@@ -1357,7 +1357,7 @@ func (o *DoneTodoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 		args = append(args, pkeyArgs...)
 	}
 
-	sql := "SELECT \"done_todo\".* FROM \"done_todo\" WHERE " +
+	sql := "SELECT \"done_todos\".* FROM \"done_todos\" WHERE " +
 		strmangle.WhereClauseRepeated(string(dialect.LQ), string(dialect.RQ), 1, doneTodoPrimaryKeyColumns, len(*o))
 
 	q := queries.Raw(sql, args...)
@@ -1375,7 +1375,7 @@ func (o *DoneTodoSlice) ReloadAll(ctx context.Context, exec boil.ContextExecutor
 // DoneTodoExists checks if the DoneTodo row exists.
 func DoneTodoExists(ctx context.Context, exec boil.ContextExecutor, iD int) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from \"done_todo\" where \"id\"=$1 limit 1)"
+	sql := "select exists(select 1 from \"done_todos\" where \"id\"=$1 limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1386,7 +1386,7 @@ func DoneTodoExists(ctx context.Context, exec boil.ContextExecutor, iD int) (boo
 
 	err := row.Scan(&exists)
 	if err != nil {
-		return false, errors.Wrap(err, "models: unable to check if done_todo exists")
+		return false, errors.Wrap(err, "models: unable to check if done_todos exists")
 	}
 
 	return exists, nil

@@ -183,33 +183,3 @@ func (r *todoResolver) DoneUsers(ctx context.Context, obj *models.Todo) ([]*mode
 func (r *Resolver) Todo() db.TodoResolver { return &todoResolver{r} }
 
 type todoResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *todoResolver) DoneTodoUsers(ctx context.Context, obj *models.Todo) ([]*models.User, error) {
-	qm := models.DoneTodoWhere.TodoID.EQ(obj.ID)
-	doneTodos, err := models.DoneTodos(qm).All(ctx, db.DB)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-
-	ids := make([]int, len(doneTodos))
-	for i, doneTodo := range doneTodos {
-		ids[i] = doneTodo.UserID
-	}
-
-	qm = models.UserWhere.ID.IN(ids)
-	users, err := models.Users(qm).All(ctx, db.DB)
-	if err != nil {
-		log.Fatal(err)
-		return nil, err
-	}
-	return users, nil
-}
-*/

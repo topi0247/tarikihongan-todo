@@ -11,8 +11,8 @@ import (
 	"tarikihongan-todo/internal/auth"
 	"tarikihongan-todo/models"
 
+	"github.com/volatiletech/sqlboiler/queries"
 	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries"
 )
 
 // User is the resolver for the user field.
@@ -76,7 +76,7 @@ func (r *mutationResolver) DeleteDoneTodoUser(ctx context.Context, todoID string
 		return &models.Response{Success: false, Message: &errMsg}, nil
 	}
 
-	_, err = queries.Raw("delete from done_todo_users where user_id = $1 and todo_id = $2", auth.CurrentUser.ID, todo.ID).Exec(db.DB)
+	_, err = queries.Raw("delete from done_todos where user_id = $1 and todo_id = $2", auth.CurrentUser.ID, todo.ID).Exec(db.DB)
 	if err != nil {
 		errMsg := err.Error()
 		return &models.Response{Success: false, Message: &errMsg}, err

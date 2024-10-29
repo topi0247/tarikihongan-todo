@@ -26,7 +26,7 @@ const TodosQuery = gql`
 export default function Top() {
   const currentUser = useRecoilValue(userState);
   const { data, loading, error } = useQuery<{ Todos: Todo[] }>(TodosQuery);
-  console.log(data);
+
   return (
     <div className="my-8">
       <article className="flex justify-center items-center flex-col gap-3 my-8">
