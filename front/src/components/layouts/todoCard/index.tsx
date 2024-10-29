@@ -149,7 +149,9 @@ export default function TodoCard({ todo }: { todo: Todo }) {
               <ul>
                 {todo.done_users.map((user, index) => (
                   <li key={index}>
-                    <span>{user.name}</span>
+                    <Link className="text-secondary" to={Path.USER_PAGE(user.id)} state={{ id: user.id }}>
+                      {user.name}
+                    </Link>
                   </li>
                 ))}
               </ul>
