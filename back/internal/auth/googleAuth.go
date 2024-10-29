@@ -119,10 +119,12 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 func setCookie(w http.ResponseWriter, tokenAuth string) {
 	secure := true
 	frontUrl := "tarikihongan-todo.vercel.app"
+	sameSite := http.SameSiteNoneMode
 	if os.Getenv("ENV") == "development" {
 		log.Println("setCookie development")
 		secure = false
 		frontUrl = "localhost"
+		sameSite = http.SameSiteLaxMode
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "_tarikihongan_todo",
@@ -131,6 +133,7 @@ func setCookie(w http.ResponseWriter, tokenAuth string) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   secure,
+		SameSite: sameSite,
 	})
 }
 
