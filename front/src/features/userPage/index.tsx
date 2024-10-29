@@ -6,24 +6,37 @@ import { useLocation } from "react-router-dom";
 import { Todo, User } from "types";
 import { useEffect, useState } from "react";
 
-const Todos = Array.from({ length: 10 }, (_, i) => ({
-  id: String(i),
-  title: `Todo ${i}`,
-  created_user: { id: String(i), name: `User ${i}` } as User,
-  created_at: "2021/09/01",
-  done_users: Array.from({ length: 3 }, (_, j) => ({
-    id: String(j),
-    name: `User ${j}`,
-  })),
-}));
-
 const UserDataQuery = gql`
   query ($id: ID!) {
     User(id: $id) {
       id
       name
-      todos
-      done_todos
+      todos {
+        id
+        title
+        created_at
+        created_user {
+          id
+          name
+        }
+        done_users {
+          id
+          name
+        }
+      }
+      done_todos {
+        id
+        title
+        created_at
+        created_user {
+          id
+          name
+        }
+        done_users {
+          id
+          name
+        }
+      }
     }
   }
 `;
@@ -46,11 +59,11 @@ export default function UserPage() {
   const [newUserName, setNewUserName] = useState("");
   const location = useLocation();
   const userId = (location.state as State).id;
-  // const {
-  //   data,
-  //   loading,
-  //   error: userError,
-  // } = useQuery(UserDataQuery, { variables: { id: userId } });
+  const {
+    data: userData,
+    loading: userLoading,
+    error: userError,
+  } = useQuery<{ User: User }>(UserDataQuery, { variables: { id: userId } });
   const [
     updateUser,
     { data: updatedData, loading: updatedLoading, error: updatedError },
@@ -75,11 +88,14 @@ export default function UserPage() {
     setNewUserName("");
   };
 
+  if (userLoading) return <p>loading...</p>;
+  if (userError) return <p>error</p>;
+
   return (
     <>
       <article>
         <section className="flex flex-col gap-2">
-          <p className="text-xl text-center">{currentUser.name}</p>
+          <p className="text-xl text-center">{userData?.User.name}</p>
           {userId === currentUser.id && (
             <form
               className="flex gap-2 justify-center items-center"
@@ -112,26 +128,30 @@ export default function UserPage() {
           <input type="checkbox" name="my-accordion-1" />
           <div className="collapse-title text-xl font-medium">作ったTodo</div>
           <div className="collapse-content">
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {Todos.map((todo) => (
-                <li key={todo.id}>
-                  <TodoCard todo={todo} />
-                </li>
-              ))}
-            </ul>
+            {!userLoading && (
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {userData?.User.todos?.map((todo: Todo) => (
+                  <li key={todo.id}>
+                    <TodoCard todo={todo} />
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
         <div className="collapse bg-base-200">
           <input type="checkbox" name="my-accordion-1" />
           <div className="collapse-title text-xl font-medium">やったTodo</div>
           <div className="collapse-content">
-            <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {Todos.map((todo) => (
-                <li key={todo.id}>
-                  <TodoCard todo={todo} />
-                </li>
-              ))}
-            </ul>
+            {!userLoading && (
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                {userData?.User.done_todos?.map((todo: Todo) => (
+                  <li key={todo.id}>
+                    <TodoCard todo={todo} />
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </article>
