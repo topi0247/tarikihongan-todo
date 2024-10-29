@@ -26,11 +26,9 @@ type GoogleUserInfo struct {
 	UID  string `json:"id"`
 }
 
-var oauthConfig *oauth2.Config
-
 func Init() {
 	log.Printf("GOOGLE_CLIENT_ID: %s", os.Getenv("GOOGLE_CLIENT_ID"))
-	oauthConfig = &oauth2.Config{
+	googleOauthConfig = &oauth2.Config{
 		ClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
 		ClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
 		RedirectURL:  os.Getenv("REDIRECT_URL"),
@@ -40,7 +38,7 @@ func Init() {
 }
 
 func RedirectToGoogleAuth(w http.ResponseWriter, r *http.Request) {
-	url := oauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	url := googleOauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
@@ -51,7 +49,7 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := oauthConfig.Exchange(context.Background(), code)
+	token, err := googleOauthConfig.Exchange(context.Background(), code)
 	if err != nil {
 		log.Printf("Unable to retrieve token from web: %v", err)
 		http.Error(w, "Unable to retrieve token", http.StatusInternalServerError)
