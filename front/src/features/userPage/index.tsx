@@ -64,23 +64,21 @@ export default function UserPage() {
     loading: userLoading,
     error: userError,
   } = useQuery<{ User: User }>(UserDataQuery, { variables: { id: userId } });
-  const [
-    updateUser,
-    { data: updatedData, loading: updatedLoading, error: updatedError },
-  ] = useMutation(UpdateMutation, {
-    update(cache, { data }) {
-      if (data?.UpdateUser.success) {
-        cache.modify({
-          id: cache.identify(currentUser),
-          fields: {
-            name() {
-              return newUserName;
+  const [updateUser, { loading: updatedLoading, error: updatedError }] =
+    useMutation(UpdateMutation, {
+      update(cache, { data }) {
+        if (data?.UpdateUser.success) {
+          cache.modify({
+            id: cache.identify(currentUser),
+            fields: {
+              name() {
+                return newUserName;
+              },
             },
-          },
-        });
-      }
-    },
-  });
+          });
+        }
+      },
+    });
 
   useEffect(() => {
     if (updatedError) {
@@ -142,7 +140,7 @@ export default function UserPage() {
           <div className="collapse-title text-xl font-medium">作ったTodo</div>
           <div className="collapse-content">
             {!userLoading && (
-              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 mx-4">
                 {userData?.User.todos?.map((todo: Todo) => (
                   <li key={todo.id}>
                     <TodoCard todo={todo} />
@@ -157,7 +155,7 @@ export default function UserPage() {
           <div className="collapse-title text-xl font-medium">やったTodo</div>
           <div className="collapse-content">
             {!userLoading && (
-              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 mx-4">
                 {userData?.User.done_todos?.map((todo: Todo) => (
                   <li key={todo.id}>
                     <TodoCard todo={todo} />

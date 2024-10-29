@@ -1,7 +1,5 @@
 import { Path } from "constants/routes";
 import { Link } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { userState } from "status";
 
 const Themes = [
   "default",
@@ -69,17 +67,29 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                 <li className="md:hidden">
                   <details>
                     <summary>メニュー</summary>
-                    <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32">
-                      <li className="hidden md:block">
+                    <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32 z-50">
+                      <li>
                         <Link to={Path.ROOT}>Todo一覧</Link>
                       </li>
                       <li>
                         <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                       </li>
                       <li>
-                        <Link to={Path.USER_PAGE(String(loginUserId))}>
+                        <Link
+                          to={Path.USER_PAGE(String(loginUserId))}
+                          state={{ id: loginUserId }}
+                        >
                           マイページ
                         </Link>
+                      </li>
+                      <li>
+                        <a
+                          href="https://x.com/intent/tweet?text=誰か代わりにやってくれ！%0A新感覚Todoアプリ「他力本願Todo」でTodo管理！%0A%23他力本願Todo&url=https%3A%2F%2Ftarikihongan-todo.vercel.app"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Xシェア
+                        </a>
                       </li>
                     </ul>
                   </details>

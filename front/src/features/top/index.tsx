@@ -45,7 +45,7 @@ export default function Top() {
         </article>
       )}
       {data && (
-        <article className="md:grid md:grid-cols-2 gap-4">
+        <article className="md:grid md:grid-cols-2 gap-4 m-4">
           {data.Todos.map((todo) => (
             <div key={todo.id}>
               <TodoCard todo={todo} />
