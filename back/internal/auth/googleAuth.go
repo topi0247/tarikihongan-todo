@@ -83,9 +83,12 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("token: %s", tokenAuth)
 
-		setCookie(w, tokenAuth)
-		w.Header().Set("Authorization", "Bearer "+tokenAuth)
-		http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
+		//setCookie(w, tokenAuth)
+		// w.Header().Set("Authorization", "Bearer "+tokenAuth)
+		// w.Header().Set("Location", redirectUrl)
+		//w.WriteHeader(http.StatusSeeOther)
+		redirectUrl += "?token=" + tokenAuth
+		http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 		return
 	}
 
@@ -106,13 +109,17 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("token: %s", tokenAuth)
-	setCookie(w, tokenAuth)
-	w.Header().Set("Authorization", "Bearer "+tokenAuth)
-	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
+	//setCookie(w, tokenAuth)
+	// w.Header().Set("Authorization", "Bearer "+tokenAuth)
+	// w.Header().Set("Authorization", "Bearer "+tokenAuth)
+	// w.Header().Set("Location", redirectUrl)
+	//w.WriteHeader(http.StatusSeeOther)
+	redirectUrl += "?token=" + tokenAuth
+	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	clearCookie(w)
+	//clearCookie(w)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
 }

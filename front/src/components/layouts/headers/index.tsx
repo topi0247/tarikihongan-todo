@@ -1,7 +1,7 @@
 import { useApolloClient } from "@apollo/client";
 import { Path } from "constants/routes";
-import { Link } from "react-router-dom";
-import { useSetRecoilState } from "recoil";
+import { Link, useNavigate } from "react-router-dom";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import { userState } from "status";
 import { User } from "types";
 
@@ -33,28 +33,12 @@ const Themes = [
 ];
 
 export default function Headers({ loginUserId }: { loginUserId: string }) {
-  const setCurrentUser = useSetRecoilState(userState);
-  const apolloClient = useApolloClient();
+  const [currentUser, setCurrentUser] = useRecoilState(userState);
 
   const handleClick = async () => {
-    const API_URL = process.env.REACT_APP_BACK_URL || "http://localhost:8080";
-    try {
-      const response = await fetch(`${API_URL}/logout`, {
-        method: "delete",
-        credentials: "include",
-      });
-      console.log(response);
-      if (response.ok) {
-        console.log("ログアウトしました");
-        setCurrentUser({ id: "", name: "" } as User);
-        await apolloClient.refetchQueries({
-          include: "active",
-        });
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("ログアウトに失敗しました");
-    }
+    window.localStorage.removeItem("_tarikihongan_token");
+    setCurrentUser({ id: "", name: "" } as User);
+    window.location.href = Path.ROOT;
   };
 
   return (
@@ -76,37 +60,38 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                   <Link to={Path.CREATE_TODO}>Todoを作る</Link>
                 </li>
                 <li className="hidden md:block">
-                  <Link
-                    to={Path.USER_PAGE(String(loginUserId))}
-                    state={{ id: loginUserId }}
-                  >
-                    マイページ
-                  </Link>
-                </li>
-                <li className="hidden md:block">
-                  <button type="button" onClick={() => handleClick()}>
-                    ログアウト
-                  </button>
-                </li>
-                <li className="hidden md:block">
-                  <a
-                    href="https://x.com/intent/tweet?text=誰か代わりにやってくれ！%0A新感覚Todoアプリ「他力本願Todo」でTodo管理！%0A%23他力本願Todo&url=https%3A%2F%2Ftarikihongan-todo.vercel.app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Xシェア
-                  </a>
+                  <details>
+                    <summary>マイページ</summary>
+                    <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32 z-50">
+                      <li>
+                        <Link
+                          to={Path.USER_PAGE(String(loginUserId))}
+                          state={{ id: loginUserId }}
+                        >
+                          {currentUser.name}さん
+                        </Link>
+                      </li>
+                      <li className="hidden md:block">
+                        <button type="button" onClick={() => handleClick()}>
+                          ログアウト
+                        </button>
+                      </li>
+                      <li>
+                        <a
+                          href="https://x.com/intent/tweet?text=誰か代わりにやってくれ！%0A新感覚Todoアプリ「他力本願Todo」でTodo管理！%0A%23他力本願Todo&url=https%3A%2F%2Ftarikihongan-todo.vercel.app"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Xシェア
+                        </a>
+                      </li>
+                    </ul>
+                  </details>
                 </li>
                 <li className="md:hidden">
                   <details>
                     <summary>メニュー</summary>
                     <ul className="bg-base-100 rounded-t-none p-2 flex flex-col gap-2 w-32 z-50">
-                      <li>
-                        <Link to={Path.ROOT}>Todo一覧</Link>
-                      </li>
-                      <li>
-                        <Link to={Path.CREATE_TODO}>Todoを作る</Link>
-                      </li>
                       <li>
                         <Link
                           to={Path.USER_PAGE(String(loginUserId))}
@@ -114,6 +99,17 @@ export default function Headers({ loginUserId }: { loginUserId: string }) {
                         >
                           マイページ
                         </Link>
+                      </li>
+                      <li>
+                        <Link to={Path.ROOT}>Todo一覧</Link>
+                      </li>
+                      <li>
+                        <Link to={Path.CREATE_TODO}>Todoを作る</Link>
+                      </li>
+                      <li>
+                        <button type="button" onClick={() => handleClick()}>
+                          ログアウト
+                        </button>
                       </li>
                       <li>
                         <a
