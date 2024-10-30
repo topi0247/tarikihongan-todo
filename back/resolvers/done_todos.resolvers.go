@@ -71,11 +71,6 @@ func (r *mutationResolver) DeleteDoneTodoUser(ctx context.Context, todoID string
 		return &models.Response{Success: false, Message: &errMsg}, err
 	}
 
-	if auth.CurrentUser.ID != todo.CreatedUserID {
-		errMsg := "You don't have permission to delete this todo."
-		return &models.Response{Success: false, Message: &errMsg}, nil
-	}
-
 	_, err = queries.Raw("delete from done_todos where user_id = $1 and todo_id = $2", auth.CurrentUser.ID, todo.ID).Exec(db.DB)
 	if err != nil {
 		errMsg := err.Error()
