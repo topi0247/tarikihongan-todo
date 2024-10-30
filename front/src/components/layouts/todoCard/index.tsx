@@ -70,6 +70,23 @@ export default function TodoCard({ todo }: { todo: Todo }) {
             },
           },
         });
+        cache.modify({
+          id: cache.identify({ __typename: "User", id: currentUser.id }),
+          fields: {
+            done_todos(existingDoneTodos = []) {
+              const newDoneTodoRef = cache.writeFragment({
+                data: todo,
+                fragment: gql`
+                  fragment NewDoneTodo on Todo {
+                    id
+                    name
+                  }
+                `,
+              });
+              return [...existingDoneTodos, newDoneTodoRef];
+            },
+          },
+        });
       }
     },
   });
@@ -83,6 +100,16 @@ export default function TodoCard({ todo }: { todo: Todo }) {
             done_users(existingDoneUsers = [], { readField }) {
               return existingDoneUsers.filter(
                 (doneUser: User) => readField("id", doneUser) !== currentUser.id
+              );
+            },
+          },
+        });
+        cache.modify({
+          id: cache.identify({ __typename: "User", id: currentUser.id }),
+          fields: {
+            done_todos(existingDoneTodos = [], { readField }) {
+              return existingDoneTodos.filter(
+                (doneTodo: Todo) => readField("id", doneTodo) !== todo.id
               );
             },
           },

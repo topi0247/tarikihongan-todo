@@ -1,6 +1,8 @@
 import { gql, useMutation } from "@apollo/client";
 import { Path } from "constants/routes";
 import { Link, useNavigate } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { userState } from "status";
 
 const postQuery = gql`
   mutation ($title: String!) {
@@ -12,6 +14,7 @@ const postQuery = gql`
 `;
 
 export default function CreateTodo() {
+  const CurrentUser = useRecoilValue(userState);
   const [postTodo, { loading, error }] = useMutation(postQuery, {
     update(cache, { data }) {
       if (data?.CreateTodo?.id) {
@@ -28,6 +31,15 @@ export default function CreateTodo() {
           id: "ROOT_QUERY",
           fields: {
             Todos(existingTodos = []) {
+              return [...existingTodos, newTodoRef];
+            },
+          },
+        });
+
+        cache.modify({
+          id: cache.identify({ __typename: "User", id: CurrentUser.id }),
+          fields: {
+            todos(existingTodos = []) {
               return [...existingTodos, newTodoRef];
             },
           },
