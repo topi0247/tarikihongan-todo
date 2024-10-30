@@ -19,7 +19,6 @@ type contextKey struct {
 
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//cookie, err := r.Cookie("_tarikihongan_todo")
 		authHeader := r.Header["Authorization"]
 		log.Printf("MiddlewareHeader: %s", authHeader)
 
@@ -36,7 +35,6 @@ func Middleware(next http.Handler) http.Handler {
 			return
 		}
 		tokenStr := strings.Split(authHeader[0], " ")[1]
-		//tokenStr := cookie.value
 		userId, err := ParseToken(tokenStr)
 		if err != nil {
 			CurrentUser = nil

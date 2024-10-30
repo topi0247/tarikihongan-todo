@@ -8,7 +8,6 @@ import (
 	"os"
 	"tarikihongan-todo/db"
 	"tarikihongan-todo/models"
-	"time"
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/oauth2"
@@ -83,10 +82,6 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("token: %s", tokenAuth)
 
-		//setCookie(w, tokenAuth)
-		// w.Header().Set("Authorization", "Bearer "+tokenAuth)
-		// w.Header().Set("Location", redirectUrl)
-		//w.WriteHeader(http.StatusSeeOther)
 		redirectUrl += "?token=" + tokenAuth
 		http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 		return
@@ -109,61 +104,11 @@ func GoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("token: %s", tokenAuth)
-	//setCookie(w, tokenAuth)
-	// w.Header().Set("Authorization", "Bearer "+tokenAuth)
-	// w.Header().Set("Authorization", "Bearer "+tokenAuth)
-	// w.Header().Set("Location", redirectUrl)
-	//w.WriteHeader(http.StatusSeeOther)
 	redirectUrl += "?token=" + tokenAuth
 	http.Redirect(w, r, redirectUrl, http.StatusSeeOther)
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	//clearCookie(w)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("ok"))
-}
-
-func setCookie(w http.ResponseWriter, tokenAuth string) {
-	secure := true
-	frontUrl := "tarikihongan-todo.vercel.app"
-	sameSite := http.SameSiteNoneMode
-	if os.Getenv("ENV") == "development" {
-		log.Println("setCookie development")
-		secure = false
-		frontUrl = "localhost"
-		sameSite = http.SameSiteLaxMode
-	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     "_tarikihongan_todo",
-		Value:    tokenAuth,
-		Domain:   frontUrl,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   secure,
-		SameSite: sameSite,
-	})
-}
-
-func clearCookie(w http.ResponseWriter) {
-	secure := true
-	frontUrl := "tarikihongan-todo.vercel.app"
-	sameSite := http.SameSiteNoneMode
-	if os.Getenv("ENV") == "development" {
-		secure = false
-		frontUrl = "localhost"
-		sameSite = http.SameSiteLaxMode
-	}
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "_tarikihongan_todo",
-		Value:    "",
-		Domain:   frontUrl,
-		Path:     "/",
-		MaxAge:   -1,
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-		Secure:   secure,
-		SameSite: sameSite,
-	})
 }

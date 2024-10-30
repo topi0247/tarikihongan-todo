@@ -15,19 +15,19 @@ export default function CreateTodo() {
   const [postTodo, { loading, error }] = useMutation(postQuery, {
     update(cache, { data }) {
       if (data?.CreateTodo?.id) {
+        const newTodoRef = cache.writeFragment({
+          data: data.CreateTodo,
+          fragment: gql`
+            fragment NewTodo on Todo {
+              id
+              title
+            }
+          `,
+        });
         cache.modify({
-          id: cache.identify({ __typename: "Todo", todos: [] }),
+          id: "ROOT_QUERY",
           fields: {
-            todos(existingTodos = []) {
-              const newTodoRef = cache.writeFragment({
-                data: data.CreateTodo.todo,
-                fragment: gql`
-                  fragment NewTodo on Todo {
-                    id
-                    title
-                  }
-                `,
-              });
+            Todos(existingTodos = []) {
               return [...existingTodos, newTodoRef];
             },
           },
@@ -38,7 +38,7 @@ export default function CreateTodo() {
   const navigate = useNavigate();
 
   if (error) {
-    alert("エラーが発生しました");
+    console.error(error);
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
