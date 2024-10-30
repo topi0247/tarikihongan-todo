@@ -1,7 +1,6 @@
-import { useApolloClient } from "@apollo/client";
 import { Path } from "constants/routes";
-import { Link, useNavigate } from "react-router-dom";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { Link } from "react-router-dom";
+import { useRecoilState } from "recoil";
 import { userState } from "status";
 import { User } from "types";
 
